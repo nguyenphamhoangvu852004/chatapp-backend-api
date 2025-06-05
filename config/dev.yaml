@@ -1,0 +1,18 @@
+server:
+  port: 8080
+
+databases:
+  - host: localhost
+    port: 3306
+    username: root
+    password: nguyenvu
+    dbname: chatapp
+  - host: localhost
+    port: 3307
+    username: root
+    password: nguyenvu
+    dbname: chatapp
+
+security:
+  jwt:
+    accessSecret: myaccessecret2025
