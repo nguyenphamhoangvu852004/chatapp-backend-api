@@ -1,18 +1,24 @@
 server:
   port: 8080
 
-databases:
-  - host: localhost
-    port: 3306
-    username: root
-    password: nguyenvu
-    dbname: chatapp
-  - host: localhost
-    port: 3307
-    username: root
-    password: nguyenvu
-    dbname: chatapp
+mysql:
+  host: "localhost"
+  port: 3306
+  username: "root"
+  password: "nguyenvu"
+  dbname: "chatapp"
+  maxIdleConns: 3
+  maxOpenConns: 5
+  connMaxLifeTime: 10
+
+log:
+  logLevel: "debug"
+  fileLogName: "./storage/logs/server.log"
+  maxSize:    500
+  maxBackups: 3
+  maxAge:     7
+  compress:   true
 
 security:
   jwt:
-    accessSecret: myaccessecret2025
+    accessSecret: "myaccessecret2025"

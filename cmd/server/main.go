@@ -1,10 +1,9 @@
 package main
 
 import (
-	"chapapp-backend-api/internal/router"
+	"chapapp-backend-api/internal/initialize"
 )
 
 func main() {
-	r := router.NewRouter()
-	r.Run(":8080")
+	initialize.Run()
 }
