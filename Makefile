@@ -7,11 +7,8 @@ APP_NAME := chatapp-backend-api
 build:
 	go build -o bin/$(APP_NAME) ./cmd
 
-dev:
-	go run ./cmd/server/main.go
-
-run: build
-	./bin/$(APP_NAME)
+run: 
+	go run ./cmd/server/
 
 test:
 	go test ./...

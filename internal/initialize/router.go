@@ -1,7 +1,7 @@
-package router
+package initialize
 
 import (
-	c "chapapp-backend-api/internal/controller"
+	"chapapp-backend-api/internal/controller"
 	"chapapp-backend-api/internal/middleware"
 	"fmt"
 
@@ -30,14 +30,14 @@ func CC(c *gin.Context) {
 	fmt.Println("Quay lai lam cai con lai trong FUNC CC")
 }
 
-func NewRouter() *gin.Engine {
+func InitRouter() *gin.Engine {
 
 	r := gin.Default()
 	r.Use(middleware.AuthMiddleware())
 	v1 := r.Group("/v1")
 	{
-		v1.GET("/ping", c.NewPongController().Pong)
-		v1.GET("/user/:id", c.NewUserController().GetUserById)
+		v1.GET("/ping", controller.NewPongController().Pong)
+		v1.GET("/user/:id", controller.NewUserController().GetUserById)
 		// v1.POST("/ping", Pong)
 		// v1.DELETE("/ping", Pong)
 		// v1.PATCH("/ping", Pong)
