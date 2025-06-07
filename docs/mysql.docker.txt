@@ -1,0 +1,9 @@
+1. Chui vào mysql container:
+docker exec -it mysql-local bash
+
+2. Đăng nhập mysql:
+mysql -h localhost -P 3308 -uroot -p
+nó sẽ hiện chỗ cho nhập mật khẩu 
+
+3. Dump database từ bên trong mysql trong docker:
+docker exec -it mysql-local mysqldump -uroot -pnguyenvu --databases chatapp --add-drop-database --add-drop-table --add-drop-trigger --add-locks --no-data > migration/chatapp.sql

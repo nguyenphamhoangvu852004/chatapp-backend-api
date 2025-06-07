@@ -1,15 +1,22 @@
 server:
+  mode: "dev"
   port: 8080
 
 mysql:
   host: "localhost"
-  port: 3306
+  port: 3308
   username: "root"
   password: "nguyenvu"
   dbname: "chatapp"
   maxIdleConns: 3
   maxOpenConns: 5
   connMaxLifeTime: 10
+
+redis:
+  host: "localhost"
+  port: 6371
+  password:
+  database: 0
 
 log:
   logLevel: "debug"
