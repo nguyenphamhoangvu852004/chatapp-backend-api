@@ -1,58 +1,44 @@
 package initialize
 
 import (
-	"chapapp-backend-api/internal/controller"
-	"chapapp-backend-api/internal/middleware"
-	"fmt"
+	"chapapp-backend-api/global"
+	"chapapp-backend-api/internal/router"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AA() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		fmt.Println("AAA ne")
-		c.Next()
-		fmt.Println("Quay lai lam cai con lai trong FUNC AA")
-	}
-}
-
-func BB() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		fmt.Println("BBB ne")
-		c.Next()
-		fmt.Println("Quay lai lam cai con lai trong FUNC BB")
-	}
-}
-
-func CC(c *gin.Context) {
-	fmt.Println("CCC ne")
-	c.Next()
-	fmt.Println("Quay lai lam cai con lai trong FUNC CC")
-}
-
 func InitRouter() *gin.Engine {
 
-	r := gin.Default()
-	r.Use(middleware.AuthMiddleware())
-	v1 := r.Group("/v1")
-	{
-		v1.GET("/ping", controller.NewPongController().Pong)
-		v1.GET("/user/:id", controller.NewUserController().GetUserById)
-		// v1.POST("/ping", Pong)
-		// v1.DELETE("/ping", Pong)
-		// v1.PATCH("/ping", Pong)
-		// v1.PUT("/ping", Pong)
-		// v1.HEAD("/ping", Pong)
+	var r *gin.Engine
+	if global.Config.Server.Mode == "dev" {
+		gin.SetMode(gin.DebugMode)
+		gin.ForceConsoleColor()
+		r = gin.Default()
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+		r = gin.New()
 	}
 
-	// v2 := r.Group("/v2")
+	// middleware
+
+	// r.Use() //loggin
+	// r.Use() //corss
+	// r.Use() //limiter globale
+
+	mananagerRouter := router.RouterGroupApp.ManagerRouter
+	userRouter := router.RouterGroupApp.UserRouter
+
+	mainGroup := r.Group("/api/v1")
 	{
-		// v2.GET("/ping", Pong)
-		// v2.POST("/ping", Pong)
-		// v2.DELETE("/ping", Pong)
-		// v2.PATCH("/ping", Pong)
-		// v2.PUT("/ping", Pong)
-		// v2.HEAD("/ping", Pong)
+		mainGroup.GET("/checkStatus") // tracking monitor
+	}
+	{
+		userRouter.UserRouter.InitUserRouter(mainGroup)
+		userRouter.ProductRouter.InitProductRouter(mainGroup)
+	}
+	{
+		mananagerRouter.UserRouter.InitUserRouter(mainGroup)
+		mananagerRouter.AdminRouter.InitAdminRouter(mainGroup)
 	}
 
 	return r

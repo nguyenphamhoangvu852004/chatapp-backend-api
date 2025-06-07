@@ -8,16 +8,16 @@ import (
 )
 
 type UserController struct {
-	userService *service.UserService
+	userService service.IUserService
 }
 
-func NewUserController() *UserController {
+func NewUserController(userService service.IUserService) *UserController {
 	return &UserController{
-		userService: service.NewUserService(),
+		userService: userService,
 	}
 }
 
-func (uc *UserController) GetUserById(c *gin.Context) {
-	// response.SuccessReponse(c, 20001, uc.userService.GetUserById())
-	response.ErrorReponse(c, 20003, "Loi roiii neee")
+func (uc *UserController) Register(c *gin.Context) {
+	result := uc.userService.Register("fdjk", "kdsajf", "123123")
+	response.SuccessReponse(c, result, nil)
 }

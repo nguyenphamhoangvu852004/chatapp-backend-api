@@ -1,17 +1,28 @@
 package service
 
-import "chapapp-backend-api/internal/reporitory"
+import (
+	"chapapp-backend-api/internal/reporitory"
+	"chapapp-backend-api/pkg/response"
+)
 
-type UserService struct {
-	userRepo *reporitory.UserRepo
+type IUserService interface {
+	Register(email string, username string, password string) int
 }
 
-func NewUserService() *UserService {
-	return &UserService{
-		userRepo: reporitory.NewUserRepo(),
+type userService struct {
+	userRepo reporitory.IUserRepository
+}
+
+// Register implements IUserService.
+func (us *userService) Register(email string, username string, password string) int {
+	if us.userRepo.GetUserByEmail(email) {
+		return response.ErrCodeParamInvalid
 	}
+	return response.ErrCodeSuccess
 }
 
-func (us *UserService) GetUserById() string {
-	return us.userRepo.GetUserById()
+func NewUserService(userRepo reporitory.IUserRepository) IUserService {
+	return &userService{
+		userRepo: userRepo,
+	}
 }
