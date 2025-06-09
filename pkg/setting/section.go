@@ -5,8 +5,14 @@ type Config struct {
 	Mysql  Mysql  `mapstructure:"mysql"`
 	Log    Log    `mapstructure:"log"`
 	Server Server `mapstructure:"server"`
+	Jwt    Jwt    `mapstructure:"jwt"`
 }
-
+type Jwt struct {
+	AccessTokenSecret        string `mapstructure:"accessSecret"`
+	AccessTokenExpiriedTime  int `mapstructure:"accessSecretExpiriedTime"`
+	RefreshTokenSecret       string `mapstructure:"refreshSecret"`
+	RefreshTokenExpiriedTime int `mapstructure:"refreshSecretExpiriedTime"`
+}
 type Server struct {
 	Mode string `mapstructure:"mode"`
 	Port int    `mapstructure:"port"`

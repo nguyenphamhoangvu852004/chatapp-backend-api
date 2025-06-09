@@ -14,9 +14,3 @@ var (
 	Mdb    *gorm.DB
 	Rdb    *redis.Client
 )
-
-/*
-redis
-mysql
-...
-*/

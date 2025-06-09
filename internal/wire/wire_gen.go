@@ -12,11 +12,12 @@ import (
 	"chapapp-backend-api/internal/service"
 )
 
-// Injectors from user.wire.go:
+// Injectors from auth.wire.go:
 
-func InitModuleUser() (*controller.UserController, error) {
-	iUserRepository := reporitory.NewUserRepository()
-	iUserService := service.NewUserService(iUserRepository)
-	userController := controller.NewUserController(iUserService)
-	return userController, nil
+func InitModuleAuth() (*controller.AuthController, error) {
+	iAccountRepository := reporitory.NewAccountRepository()
+	iAuthRepository := reporitory.NewAuthRepository()
+	iAuthService := service.NewAuthService(iAccountRepository, iAuthRepository)
+	authController := controller.NewAuthController(iAuthService)
+	return authController, nil
 }
