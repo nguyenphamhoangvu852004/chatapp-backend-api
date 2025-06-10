@@ -4,6 +4,7 @@ import (
 	"chapapp-backend-api/internal/dto"
 	"chapapp-backend-api/internal/reporitory"
 	"fmt"
+	"time"
 )
 
 type IAccountService interface {
@@ -34,6 +35,8 @@ func (a *accountService) GetList() ([]dto.GetAccountDetailOutputDTO, error) {
 				Bio:       v.Profile.Bio,
 				AvatarURL: v.Profile.AvatarURL,
 				CoverURL:  v.Profile.CoverURL,
+				CreatedAt: v.Profile.CreatedAt.Format(time.RFC3339),
+				UpdatedAt: v.Profile.UpdatedAt.Format(time.RFC3339),
 			},
 		})
 	}
@@ -57,6 +60,8 @@ func (a *accountService) GetDetail(id string) (dto.GetAccountDetailOutputDTO, er
 			Bio:       res.Profile.Bio,
 			AvatarURL: res.Profile.AvatarURL,
 			CoverURL:  res.Profile.CoverURL,
+			CreatedAt: res.Profile.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: res.Profile.UpdatedAt.Format(time.RFC3339),
 		},
 	}, nil
 }
