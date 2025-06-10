@@ -7,6 +7,7 @@ type Config struct {
 	Server Server `mapstructure:"server"`
 	Jwt    Jwt    `mapstructure:"jwt"`
 	Cors   Cors   `mapstructure:"cors"`
+	
 }
 
 type Cors struct {
