@@ -17,11 +17,11 @@ type ProfileController struct {
 
 func (controller *ProfileController) Update(c *gin.Context) {
 
-	// coverUrl := c.GetString("coverUrl")   // lấy từ middleware
-	// avatarUrl := c.GetString("avatarUrl") // lấy từ middleware
+	coverUrl := c.GetString("coverUrl")   // lấy từ middleware
+	avatarUrl := c.GetString("avatarUrl") // lấy từ middleware
 
-	coverUrl := "test cover thoi nhe"   // lấy từ middleware á nha
-	avatarUrl := "test avatar thoi nhe" // lấy từ middleware á nha
+	// coverUrl := "test cover thoi nhe"   // lấy từ middleware á nha
+	// avatarUrl := "test avatar thoi nhe" // lấy từ middleware á nha
 
 	var inputDto = dto.UpdateProfileInputDTO{
 		ProfileId: c.Param("id"),
