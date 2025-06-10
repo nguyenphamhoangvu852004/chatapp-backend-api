@@ -2,6 +2,9 @@ server:
   mode: "dev"
   port: 8080
 
+cors:
+  url: "http://localhost:5173"
+
 mysql:
   host: "localhost"
   port: 3306

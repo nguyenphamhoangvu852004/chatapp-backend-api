@@ -12,12 +12,13 @@ type AuthRouter struct {
 func (userRouter *AuthRouter) InitAuthRouter(router *gin.RouterGroup) {
 	//public router
 	authController, _ := wire.InitModuleAuth()
-	userPublicRouter := router.Group("/auth")
+	authPublicRouter := router.Group("/auth")
 	{
-		userPublicRouter.POST("/sendOtp", authController.SendOTP)
-		userPublicRouter.POST("/verifyOtp", authController.VerifyOTP)
-		userPublicRouter.POST("/register", authController.Register)
-		userPublicRouter.POST("/login", authController.Login)
+		authPublicRouter.POST("/sendOtp", authController.SendOTP)
+		authPublicRouter.POST("/verifyOtp", authController.VerifyOTP)
+		authPublicRouter.POST("/register", authController.Register)
+		authPublicRouter.POST("/login", authController.Login)
+		authPublicRouter.PUT("/resetPassword", authController.ResetPassword)
 	}
 
 	//private router

@@ -1,9 +1,12 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+)
 
 type ConversationParticipant struct {
-	ID             uint `gorm:"primaryKey"`
+	BaseEntity
 	AccountID      uint
 	Account        Account `gorm:"constraint:OnDelete:CASCADE"`
 	Name           string  `gorm:"type:varchar(255)"`

@@ -18,11 +18,45 @@ type IAuthService interface {
 	Register(data auth.RegisterInputDTO) (auth.RegisterOutputDTO, error)
 	SendOTP(data auth.SendOTPInputDTO) (auth.SendOTPOutputDTO, error)
 	VerifyOTP(data auth.VerifyOTPInputDTO) (auth.VerifyOTPOutputDTO, error)
+	ResetPassword(data auth.ResetPasswordInputDTO) (auth.ResetPasswordOutputDTO, error)
 }
 
 type authService struct {
 	accountRepo reporitory.IAccountRepository
 	authRepo    reporitory.IAuthRepository
+}
+
+// ResetPassword implements IAuthService.
+func (authService *authService) ResetPassword(data auth.ResetPasswordInputDTO) (auth.ResetPasswordOutputDTO, error) {
+	// tìm cái entity account theo email
+
+	account, err := authService.accountRepo.GetUserByEmail(data.Email)
+	if err != nil {
+		return auth.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "Not found account")
+	}
+
+	// so sanh 2 cai passs tu client
+	if data.ConfirmPassword != data.Password {
+		return auth.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Password and confirm password do not match")
+	}
+
+	// doi qua mat khau moi
+	account.Password = data.Password
+	account.UpdatedAt = time.Now()
+
+	// luu vao db
+	_, err = authService.accountRepo.Update(account)
+	if err != nil {
+		return auth.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to update account")
+	}
+
+	outDTO := auth.ResetPasswordOutputDTO{
+		Id:      strconv.FormatUint(uint64(account.ID), 10),
+		Email:   account.Email,
+		Message: "Reset password success",
+	}
+
+	return outDTO, nil
 }
 
 // Login implements IAuthService.
@@ -74,13 +108,12 @@ func (authService *authService) SendOTP(data auth.SendOTPInputDTO) (auth.SendOTP
 	// mã hoá hash
 	strHashed := utils.GetHash(data.Email)
 
-	
 	if _, err := authService.authRepo.CanSendOTP(strHashed); err != nil {
 		return auth.SendOTPOutputDTO{
 			Email:   data.Email,
 			Message: "Please wait for 10 minutes",
 		}, errors.New("please wait for 10 minutes")
-	} 
+	}
 
 	if err := authService.authRepo.AddOTP(strHashed, otp, int64(10*time.Minute)); err != nil {
 		return auth.SendOTPOutputDTO{
@@ -123,7 +156,6 @@ func (s *authService) Register(input auth.RegisterInputDTO) (auth.RegisterOutput
 		Password:    input.Password, // TODO: mã hóa sau
 		Username:    input.Username,
 		PhoneNumber: input.PhoneNumber,
-		ProfileID:   nil,
 	}
 
 	// 4. Lưu vào DB

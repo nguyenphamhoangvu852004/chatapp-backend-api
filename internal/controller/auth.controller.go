@@ -89,3 +89,25 @@ func (uc *AuthController) SendOTP(c *gin.Context) {
 	// trả về client
 	response.SuccessReponse(c, http.StatusAccepted, result)
 }
+
+func (uc *AuthController) ResetPassword(c *gin.Context) {
+	// tạo dt
+	var inputDto auth.ResetPasswordInputDTO
+	if err := c.BindJSON(&inputDto); err != nil {
+		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	// gọi service
+	result, err := uc.authService.ResetPassword(inputDto)
+	if err != nil {
+		var customErr *exception.CustomError
+		if errors.As(err, &customErr) {
+			response.ErrorReponse(c, customErr.Code, customErr.Message)
+		} else {
+			response.ErrorReponse(c, 500, "internal server error")
+		}
+		return
+	}
+	// trả về client
+	response.SuccessReponse(c, http.StatusAccepted, result)
+}

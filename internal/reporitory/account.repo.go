@@ -9,9 +9,19 @@ type IAccountRepository interface {
 	GetUserByEmail(email string) (entity.Account, error)
 	GetUserByUsername(username string) (entity.Account, error)
 	Create(account entity.Account) (entity.Account, error)
+	Update(account entity.Account) (entity.Account, error)
 }
 
 type accountRepository struct {
+}
+
+// Update implements IAccountRepository.
+func (a *accountRepository) Update(account entity.Account) (entity.Account, error) {
+	result := global.Mdb.Save(&account)
+	if result.Error != nil {
+		return entity.Account{}, result.Error
+	}
+	return account, nil
 }
 
 // GetUserByUsername implements IAccountRepository.

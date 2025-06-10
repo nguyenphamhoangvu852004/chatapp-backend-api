@@ -1,9 +1,12 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+)
 
 type MessageRead struct {
-	ID        uint `gorm:"primaryKey"`
+	BaseEntity
 	AccountID uint
 	Account   Account `gorm:"constraint:OnDelete:CASCADE"`
 	MessageID uint
