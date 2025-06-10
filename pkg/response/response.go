@@ -15,15 +15,15 @@ type ResponseData struct {
 func SuccessReponse(c *gin.Context, code int, data any) {
 	c.JSON(http.StatusOK, ResponseData{
 		Code:    code,
-		Message: message[code],
+		Message: http.StatusText(code),
 		Data:    data,
 	})
 }
 
-func ErrorReponse(c *gin.Context, code int, mess string) {
-	c.JSON(http.StatusOK, ResponseData{
+func ErrorReponse(c *gin.Context, code int, message string) {
+	c.JSON(code, ResponseData{
 		Code:    code,
-		Message: message[code],
+		Message: message,
 		Data:    nil,
 	})
 }

@@ -1,13 +1,11 @@
 package router
 
 import (
-	"chapapp-backend-api/internal/router/manager"
-	"chapapp-backend-api/internal/router/user"
+	"chapapp-backend-api/internal/router/auth"
 )
 
 type RouterGroup struct {
-	UserRouter    user.UserRouterGroup
-	ManagerRouter manager.ManagerRouterGroup
+	AuthRouter auth.AuthRouter
 }
 
 var RouterGroupApp = new(RouterGroup)

@@ -4,6 +4,7 @@ import (
 	"chapapp-backend-api/global"
 	"chapapp-backend-api/internal/router"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,23 +23,28 @@ func InitRouter() *gin.Engine {
 	// middleware
 
 	// r.Use() //loggin
+
+	// CORS config
+	config := cors.Config{
+		AllowOrigins: []string{global.Config.Cors.Url},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
+		// AllowCredentials: true,
+		// MaxAge:           12 * time.Hour,
+	}
 	// r.Use() //corss
+	r.Use(cors.New(config))
+
 	// r.Use() //limiter globale
 
-	mananagerRouter := router.RouterGroupApp.ManagerRouter
-	userRouter := router.RouterGroupApp.UserRouter
+	authRouter := router.RouterGroupApp.AuthRouter
 
 	mainGroup := r.Group("/api/v1")
 	{
-		mainGroup.GET("/checkStatus") // tracking monitor
+		mainGroup.GET("/checkStatus", func(c *gin.Context) { c.JSON(200, gin.H{"message": "ok"}) }) // tracking monitor
 	}
 	{
-		userRouter.UserRouter.InitUserRouter(mainGroup)
-		userRouter.ProductRouter.InitProductRouter(mainGroup)
-	}
-	{
-		mananagerRouter.UserRouter.InitUserRouter(mainGroup)
-		mananagerRouter.AdminRouter.InitAdminRouter(mainGroup)
+		authRouter.InitAuthRouter(mainGroup)
 	}
 
 	return r

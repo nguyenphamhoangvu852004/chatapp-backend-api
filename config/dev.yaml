@@ -2,9 +2,12 @@ server:
   mode: "dev"
   port: 8080
 
+cors:
+  url: "http://localhost:5173"
+
 mysql:
   host: "localhost"
-  port: 3308
+  port: 3306
   username: "root"
   password: "nguyenvu"
   dbname: "chatapp"
@@ -14,7 +17,7 @@ mysql:
 
 redis:
   host: "localhost"
-  port: 6371
+  port: 6379
   password:
   database: 0
 
@@ -26,6 +29,8 @@ log:
   maxAge:     7
   compress:   true
 
-security:
-  jwt:
-    accessSecret: "myaccessecret2025"
+jwt:
+  accessSecret: "myaccessecrettoken2025"
+  accessSecretExpiriedTime: 3600
+  refreshSecret: "myrefreshtokensecret2025"
+  refreshSecretExpiriedTime: 86400

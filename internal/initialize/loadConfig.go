@@ -8,7 +8,6 @@ import (
 )
 
 func LoadConfig() {
-
 	viper := viper.New()
 	viper.AddConfigPath("config")
 	viper.SetConfigName("dev")
@@ -25,5 +24,4 @@ func LoadConfig() {
 	if err := viper.Unmarshal(&global.Config); err != nil {
 		panic(fmt.Errorf("failed to unmarshal YAML file: %w", err))
 	}
-
 }
