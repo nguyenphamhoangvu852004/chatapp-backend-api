@@ -1,0 +1,52 @@
+package controller
+
+import (
+	exception "chapapp-backend-api/internal/exeption"
+	"chapapp-backend-api/internal/service"
+	"chapapp-backend-api/pkg/response"
+	"errors"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type AccountController struct {
+	accountService service.IAccountService
+}
+
+func (accountController *AccountController) GetDetail(c *gin.Context) {
+	accountId := c.Param("id")
+	result, err := accountController.accountService.GetDetail(accountId)
+	if err != nil {
+		var customErr *exception.CustomError
+		if errors.As(err, &customErr) {
+			response.ErrorReponse(c, customErr.Code, customErr.Message)
+		} else {
+			response.ErrorReponse(c, 500, "internal server error")
+		}
+		return
+	}
+
+	response.SuccessReponse(c, http.StatusOK, result)
+}
+
+func (accountController *AccountController) GetList(c *gin.Context) {
+	result, err := accountController.accountService.GetList()
+	if err != nil {
+		var customErr *exception.CustomError
+		if errors.As(err, &customErr) {
+			response.ErrorReponse(c, customErr.Code, customErr.Message)
+		} else {
+			response.ErrorReponse(c, 500, "internal server error")
+		}
+		return
+	}
+
+	response.SuccessReponse(c, http.StatusOK, result)
+}
+
+func NewAccountController(accountService service.IAccountService) *AccountController {
+	return &AccountController{
+		accountService: accountService,
+	}
+}

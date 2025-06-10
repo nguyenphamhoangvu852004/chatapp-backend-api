@@ -6,13 +6,36 @@ import (
 )
 
 type IAccountRepository interface {
+	GetList() ([]entity.Account, error)
 	GetUserByEmail(email string) (entity.Account, error)
 	GetUserByUsername(username string) (entity.Account, error)
+	GetUserByAccountId(id string) (entity.Account, error)
 	Create(account entity.Account) (entity.Account, error)
 	Update(account entity.Account) (entity.Account, error)
 }
 
 type accountRepository struct {
+}
+
+// GetList implements IAccountRepository.
+func (a *accountRepository) GetList() ([]entity.Account, error) {
+	var accounts []entity.Account
+	err := global.Mdb.Preload("Profile").Find(&accounts).Error
+	if err != nil {
+		return nil, err
+	}
+	return accounts, nil
+}
+
+// GetUserByAccountId implements IAccountRepository.
+func (a *accountRepository) GetUserByAccountId(id string) (entity.Account, error) {
+	var account entity.Account
+	err := global.Mdb.Preload("Profile").Where("id = ?", id).First(&account).Error
+
+	if err != nil {
+		return entity.Account{}, err
+	}
+	return account, nil
 }
 
 // Update implements IAccountRepository.

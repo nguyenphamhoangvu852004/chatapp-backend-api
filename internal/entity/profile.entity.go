@@ -1,6 +1,5 @@
 package entity
 
-
 type Profile struct {
 	BaseEntity
 	FullName  string `gorm:"type:varchar(255)"`

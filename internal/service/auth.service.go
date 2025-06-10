@@ -1,7 +1,7 @@
 package service
 
 import (
-	"chapapp-backend-api/internal/dto/auth"
+	"chapapp-backend-api/internal/dto"
 	"chapapp-backend-api/internal/entity"
 	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/reporitory"
@@ -14,30 +14,30 @@ import (
 )
 
 type IAuthService interface {
-	Login(data auth.LoginInputDTO) (auth.LoginOutputDTO, error)
-	Register(data auth.RegisterInputDTO) (auth.RegisterOutputDTO, error)
-	SendOTP(data auth.SendOTPInputDTO) (auth.SendOTPOutputDTO, error)
-	VerifyOTP(data auth.VerifyOTPInputDTO) (auth.VerifyOTPOutputDTO, error)
-	ResetPassword(data auth.ResetPasswordInputDTO) (auth.ResetPasswordOutputDTO, error)
+	Login(data dto.LoginInputDTO) (dto.LoginOutputDTO, error)
+	Register(data dto.RegisterInputDTO) (dto.RegisterOutputDTO, error)
+	SendOTP(data dto.SendOTPInputDTO) (dto.SendOTPOutputDTO, error)
+	VerifyOTP(data dto.VerifyOTPInputDTO) (dto.VerifyOTPOutputDTO, error)
+	ResetPassword(data dto.ResetPasswordInputDTO) (dto.ResetPasswordOutputDTO, error)
 }
 
-type authService struct {
+type dtoService struct {
 	accountRepo reporitory.IAccountRepository
-	authRepo    reporitory.IAuthRepository
+	dtoRepo     reporitory.IAuthRepository
 }
 
 // ResetPassword implements IAuthService.
-func (authService *authService) ResetPassword(data auth.ResetPasswordInputDTO) (auth.ResetPasswordOutputDTO, error) {
+func (dtoService *dtoService) ResetPassword(data dto.ResetPasswordInputDTO) (dto.ResetPasswordOutputDTO, error) {
 	// tìm cái entity account theo email
 
-	account, err := authService.accountRepo.GetUserByEmail(data.Email)
+	account, err := dtoService.accountRepo.GetUserByEmail(data.Email)
 	if err != nil {
-		return auth.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "Not found account")
+		return dto.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "Not found account")
 	}
 
 	// so sanh 2 cai passs tu client
 	if data.ConfirmPassword != data.Password {
-		return auth.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Password and confirm password do not match")
+		return dto.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Password and confirm password do not match")
 	}
 
 	// doi qua mat khau moi
@@ -45,12 +45,12 @@ func (authService *authService) ResetPassword(data auth.ResetPasswordInputDTO) (
 	account.UpdatedAt = time.Now()
 
 	// luu vao db
-	_, err = authService.accountRepo.Update(account)
+	_, err = dtoService.accountRepo.Update(account)
 	if err != nil {
-		return auth.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to update account")
+		return dto.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to update account")
 	}
 
-	outDTO := auth.ResetPasswordOutputDTO{
+	outDTO := dto.ResetPasswordOutputDTO{
 		Id:      strconv.FormatUint(uint64(account.ID), 10),
 		Email:   account.Email,
 		Message: "Reset password success",
@@ -60,21 +60,21 @@ func (authService *authService) ResetPassword(data auth.ResetPasswordInputDTO) (
 }
 
 // Login implements IAuthService.
-func (authService *authService) Login(data auth.LoginInputDTO) (auth.LoginOutputDTO, error) {
+func (dtoService *dtoService) Login(data dto.LoginInputDTO) (dto.LoginOutputDTO, error) {
 	// tim theo username
-	account, err := authService.accountRepo.GetUserByUsername(data.Username)
+	account, err := dtoService.accountRepo.GetUserByUsername(data.Username)
 	if err != nil {
-		return auth.LoginOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "Not found account")
+		return dto.LoginOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "Not found account")
 	}
 
 	if account.Password != data.Password {
-		return auth.LoginOutputDTO{}, exception.NewCustomError(http.StatusUnauthorized, "Invalid password")
+		return dto.LoginOutputDTO{}, exception.NewCustomError(http.StatusUnauthorized, "Invalid password")
 	}
 
 	var accToken, _ = utils.GenerateAccessToken(account.ID, account.Email)
 	var refToken, _ = utils.GenerateRefreshToken(account.ID)
 
-	return auth.LoginOutputDTO{
+	return dto.LoginOutputDTO{
 		Id:           strconv.FormatUint(uint64(account.ID), 10),
 		AccessToken:  accToken,
 		RefreshToken: refToken,
@@ -82,41 +82,41 @@ func (authService *authService) Login(data auth.LoginInputDTO) (auth.LoginOutput
 
 }
 
-func (authService *authService) VerifyOTP(data auth.VerifyOTPInputDTO) (auth.VerifyOTPOutputDTO, error) {
+func (dtoService *dtoService) VerifyOTP(data dto.VerifyOTPInputDTO) (dto.VerifyOTPOutputDTO, error) {
 
 	var otpEmailKey = utils.GetHash(data.Email)
 	// tìm coi có cái key trong redis hay không
-	email, otp, _ := authService.authRepo.GetOTP(otpEmailKey)
+	email, otp, _ := dtoService.dtoRepo.GetOTP(otpEmailKey)
 	fmt.Println(email, otp)
 	if email != "" && otp == utils.StringToInt(data.OTP) {
-		return auth.VerifyOTPOutputDTO{
+		return dto.VerifyOTPOutputDTO{
 			Email:   data.Email,
 			Message: "Verify OTP success",
 		}, nil
 	}
-	authService.authRepo.RemoveOTP(otpEmailKey)
-	return auth.VerifyOTPOutputDTO{
+	dtoService.dtoRepo.RemoveOTP(otpEmailKey)
+	return dto.VerifyOTPOutputDTO{
 		Email:   data.Email,
 		Message: "Verify OTP fail",
 	}, errors.New("verify OTP failed")
 }
 
 // SendOTP implements IAuthService.
-func (authService *authService) SendOTP(data auth.SendOTPInputDTO) (auth.SendOTPOutputDTO, error) {
+func (dtoService *dtoService) SendOTP(data dto.SendOTPInputDTO) (dto.SendOTPOutputDTO, error) {
 	// tạo otp
 	otp := utils.GenerateSixDigitNumber()
 	// mã hoá hash
 	strHashed := utils.GetHash(data.Email)
 
-	if _, err := authService.authRepo.CanSendOTP(strHashed); err != nil {
-		return auth.SendOTPOutputDTO{
+	if _, err := dtoService.dtoRepo.CanSendOTP(strHashed); err != nil {
+		return dto.SendOTPOutputDTO{
 			Email:   data.Email,
 			Message: "Please wait for 10 minutes",
 		}, errors.New("please wait for 10 minutes")
 	}
 
-	if err := authService.authRepo.AddOTP(strHashed, otp, int64(10*time.Minute)); err != nil {
-		return auth.SendOTPOutputDTO{
+	if err := dtoService.dtoRepo.AddOTP(strHashed, otp, int64(10*time.Minute)); err != nil {
+		return dto.SendOTPOutputDTO{
 			Email:   data.Email,
 			Message: "Send OTP fail",
 		}, errors.New("send OTP fail")
@@ -125,12 +125,12 @@ func (authService *authService) SendOTP(data auth.SendOTPInputDTO) (auth.SendOTP
 	// thực hiện gữi vào email
 	err := utils.SendTextEmailOTP([]string{data.Email}, "nguyenphamhoangvu852004@gmail.com", "OTP:"+strconv.Itoa(otp))
 	if err != nil {
-		return auth.SendOTPOutputDTO{
+		return dto.SendOTPOutputDTO{
 			Email:   data.Email,
 			Message: "Send OTP fail",
 		}, errors.New("send OTP fail")
 	}
-	return auth.SendOTPOutputDTO{
+	return dto.SendOTPOutputDTO{
 		Email:          data.Email,
 		Message:        "Send OTP success",
 		ExpirationTime: 10,
@@ -138,16 +138,16 @@ func (authService *authService) SendOTP(data auth.SendOTPInputDTO) (auth.SendOTP
 }
 
 // Register implements IAuthService.
-func (s *authService) Register(input auth.RegisterInputDTO) (auth.RegisterOutputDTO, error) {
+func (s *dtoService) Register(input dto.RegisterInputDTO) (dto.RegisterOutputDTO, error) {
 	// 1. Check email đã tồn tại chưa
 	_, err := s.accountRepo.GetUserByEmail(input.Email)
 	if err == nil {
 		// Email đã tồn tại, trả về lỗi
-		return auth.RegisterOutputDTO{}, exception.NewCustomError(http.StatusConflict, "Email already exists")
+		return dto.RegisterOutputDTO{}, exception.NewCustomError(http.StatusConflict, "Email already exists")
 	}
 	// 2. Kiểm tra password và confirm password
 	if input.Password != input.ConfirmPassword {
-		return auth.RegisterOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Password and confirm password do not match")
+		return dto.RegisterOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Password and confirm password do not match")
 	}
 
 	// 3. Tạo entity account mới
@@ -156,16 +156,22 @@ func (s *authService) Register(input auth.RegisterInputDTO) (auth.RegisterOutput
 		Password:    input.Password, // TODO: mã hóa sau
 		Username:    input.Username,
 		PhoneNumber: input.PhoneNumber,
+		Profile: &entity.Profile{
+			FullName:  "",
+			Bio:       "",
+			AvatarURL: "",
+			CoverURL:  "",
+		},
 	}
 
 	// 4. Lưu vào DB
 	createdAccount, err := s.accountRepo.Create(newAccount)
 	if err != nil {
-		return auth.RegisterOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to create account")
+		return dto.RegisterOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to create account")
 	}
 
 	// 5. Chuẩn bị output DTO
-	output := auth.RegisterOutputDTO{
+	output := dto.RegisterOutputDTO{
 		Id:       strconv.FormatUint(uint64(createdAccount.ID), 10),
 		Username: createdAccount.Username,
 		Email:    createdAccount.Email,
@@ -173,9 +179,9 @@ func (s *authService) Register(input auth.RegisterInputDTO) (auth.RegisterOutput
 	return output, nil
 }
 
-func NewAuthService(accountRepo reporitory.IAccountRepository, authRepo reporitory.IAuthRepository) IAuthService {
-	return &authService{
+func NewAuthService(accountRepo reporitory.IAccountRepository, dtoRepo reporitory.IAuthRepository) IAuthService {
+	return &dtoService{
 		accountRepo: accountRepo,
-		authRepo:    authRepo,
+		dtoRepo:     dtoRepo,
 	}
 }

@@ -7,7 +7,12 @@ type Config struct {
 	Server Server `mapstructure:"server"`
 	Jwt    Jwt    `mapstructure:"jwt"`
 	Cors   Cors   `mapstructure:"cors"`
-	
+	Cloudinary Cloudinary `mapstructure:"cloudinary"`
+}
+type Cloudinary struct{
+	CloudName string  `mapstructure:"cloud_name"`
+	ApiKey    string  `mapstructure:"api_key"`
+	ApiSecret string  `mapstructure:"api_secret"`
 }
 
 type Cors struct {

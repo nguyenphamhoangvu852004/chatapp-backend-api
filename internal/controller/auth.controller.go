@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"chapapp-backend-api/internal/dto/auth"
+	"chapapp-backend-api/internal/dto"
 	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/service"
 	"chapapp-backend-api/pkg/response"
@@ -23,7 +23,7 @@ func NewAuthController(authService service.IAuthService) *AuthController {
 }
 
 func (uc *AuthController) Register(c *gin.Context) {
-	var inputDto auth.RegisterInputDTO
+	var inputDto dto.RegisterInputDTO
 	fmt.Println(inputDto)
 	if err := c.BindJSON(&inputDto); err != nil {
 		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
@@ -42,7 +42,7 @@ func (uc *AuthController) Register(c *gin.Context) {
 	response.SuccessReponse(c, http.StatusCreated, result)
 }
 func (uc *AuthController) VerifyOTP(c *gin.Context) {
-	var inputDto auth.VerifyOTPInputDTO
+	var inputDto dto.VerifyOTPInputDTO
 	if err := c.BindJSON(&inputDto); err != nil {
 		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -56,7 +56,7 @@ func (uc *AuthController) VerifyOTP(c *gin.Context) {
 }
 func (uc *AuthController) Login(c *gin.Context) {
 
-	var inputDto auth.LoginInputDTO
+	var inputDto dto.LoginInputDTO
 	if err := c.BindJSON(&inputDto); err != nil {
 		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -75,7 +75,7 @@ func (uc *AuthController) Login(c *gin.Context) {
 }
 func (uc *AuthController) SendOTP(c *gin.Context) {
 	// tạo dt
-	var inputDto auth.SendOTPInputDTO
+	var inputDto dto.SendOTPInputDTO
 	if err := c.BindJSON(&inputDto); err != nil {
 		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -92,7 +92,7 @@ func (uc *AuthController) SendOTP(c *gin.Context) {
 
 func (uc *AuthController) ResetPassword(c *gin.Context) {
 	// tạo dt
-	var inputDto auth.ResetPasswordInputDTO
+	var inputDto dto.ResetPasswordInputDTO
 	if err := c.BindJSON(&inputDto); err != nil {
 		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
 		return

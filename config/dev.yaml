@@ -34,3 +34,9 @@ jwt:
   accessSecretExpiriedTime: 3600
   refreshSecret: "myrefreshtokensecret2025"
   refreshSecretExpiriedTime: 86400
+
+cloudinary:
+  cloud_name: "dmsnw2qpd"
+  api_key: "214187186256291"
+  api_secret: "13ew1sxffolXvVYkaGleJcAd4AY"
+

@@ -1,4 +1,4 @@
-package auth
+package dto
 
 type SendOTPInputDTO struct {
 	Email string `json:"email"`

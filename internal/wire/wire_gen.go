@@ -21,3 +21,17 @@ func InitModuleAuth() (*controller.AuthController, error) {
 	authController := controller.NewAuthController(iAuthService)
 	return authController, nil
 }
+
+func InitModuleProfile() (*controller.ProfileController, error) {
+	iProfileRepository := reporitory.NewProfileRepository()
+	iProfileService := service.NewProfileService(iProfileRepository)
+	profileController := controller.NewProfileController(iProfileService)
+	return profileController, nil
+}
+
+func InitModuleAccount() (*controller.AccountController, error) {
+	iAccountRepository := reporitory.NewAccountRepository()
+	iAccountService := service.NewAccountService(iAccountRepository)
+	accountController := controller.NewAccountController(iAccountService)
+	return accountController, nil
+}

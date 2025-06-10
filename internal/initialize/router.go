@@ -38,13 +38,16 @@ func InitRouter() *gin.Engine {
 	// r.Use() //limiter globale
 
 	authRouter := router.RouterGroupApp.AuthRouter
-
+	profileRouter := router.RouterGroupApp.ProfileRouter
+	accountRouter := router.RouterGroupApp.AccountRouter
 	mainGroup := r.Group("/api/v1")
 	{
 		mainGroup.GET("/checkStatus", func(c *gin.Context) { c.JSON(200, gin.H{"message": "ok"}) }) // tracking monitor
 	}
 	{
 		authRouter.InitAuthRouter(mainGroup)
+		profileRouter.InitProfileRouter(mainGroup)
+		accountRouter.InitAccountRouter(mainGroup)
 	}
 
 	return r

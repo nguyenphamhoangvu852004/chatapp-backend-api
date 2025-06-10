@@ -1,4 +1,4 @@
-package auth
+package router
 
 import (
 	"chapapp-backend-api/internal/wire"
@@ -21,13 +21,13 @@ func (userRouter *AuthRouter) InitAuthRouter(router *gin.RouterGroup) {
 		authPublicRouter.PUT("/resetPassword", authController.ResetPassword)
 	}
 
-	//private router
-	userPrivateRouter := router.Group("/user")
-	// userPrivateRouter.Use(middleware.Limiter())
-	// userPrivateRouter.Use(middleware.AuthMiddleware())
-	// userPrivateRouter.Use(middleware.PermissionMiddleware())
-	{
-		userPrivateRouter.GET("/getInfo/:id")
-	}
+	// //private router
+	// userPrivateRouter := router.Group("/user")
+	// // userPrivateRouter.Use(middleware.Limiter())
+	// // userPrivateRouter.Use(middleware.AuthMiddleware())
+	// // userPrivateRouter.Use(middleware.PermissionMiddleware())
+	// {
+	// 	userPrivateRouter.GET("/getInfo/:id")
+	// }
 
 }
