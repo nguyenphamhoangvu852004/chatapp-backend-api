@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"chapapp-backend-api/global"
+	"strconv"
 )
 
 func Run() {
@@ -9,6 +10,5 @@ func Run() {
 	InitLogger()
 	global.Logger.Info("Load Config Success")
 	InitMysql()
-	InitRedis()
-	InitRouter().Run(":8080")
+	InitRouter().Run(":" + strconv.Itoa(global.Config.Server.Port))
 }

@@ -1,5 +1,10 @@
 package entity
 
+const (
+	PENDING  = "PENDING"
+	ACCEPTED = "ACCEPTED"
+	REJECTED = "REJECTED"
+)
 
 type FriendShip struct {
 	BaseEntity
