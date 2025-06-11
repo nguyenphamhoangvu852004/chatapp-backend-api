@@ -20,6 +20,25 @@ func NewFriendShipController(friendShipService service.IFriendShipService) *Frie
 
 }
 
+func (controllet *FriendShipController) Delete(c *gin.Context){
+	var inputDto dto.DeleteFriendShipInputDTO
+	if err := c.ShouldBindBodyWithJSON(&inputDto); err != nil {
+		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	result, err := controllet.friendShipService.Delete(inputDto)
+	if err != nil {
+		var customErr *exception.CustomError
+		if errors.As(err, &customErr) {
+			response.ErrorReponse(c, customErr.Code, customErr.Message)
+		} else {
+			response.ErrorReponse(c, 500, "internal server error")
+		}
+		return
+	}
+	response.SuccessReponse(c, http.StatusOK, result)
+}
+
 func (controllet *FriendShipController) GetListReceiveFriendShips(c *gin.Context) {
 	id := c.Param("id")
 	result, err := controllet.friendShipService.GetListReceiveFriendShips(id)

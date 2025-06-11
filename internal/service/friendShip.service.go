@@ -11,6 +11,7 @@ import (
 )
 
 type IFriendShipService interface {
+	Delete(data dto.DeleteFriendShipInputDTO) (dto.DeleteFriendShipOutputDTO, error)
 	Create(data dto.CreateFriendShipInputDTO) (dto.CreateFriendShipOutputDTO, error)
 	Update(data dto.UpdateFriendShipInputDTO) (dto.UpdateFriendShipOutputDTO, error)
 	GetList(data dto.GetListFriendShipInputDTO) (dto.GetListFriendShipOutputDTO, error)
@@ -24,6 +25,43 @@ type friendShipService struct {
 	accountRepo    reporitory.IAccountRepository
 	profileRepo    reporitory.IProfileRepository
 }
+
+// Delete implements IFriendShipService.
+func (s *friendShipService) Delete(data dto.DeleteFriendShipInputDTO) (dto.DeleteFriendShipOutputDTO, error) {
+	// 1. Lấy thông tin sender và receiver
+	sender, err := s.accountRepo.GetUserByAccountId(strconv.FormatInt(data.SenderID, 10))
+	if err != nil {
+		return dto.DeleteFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "sender not found")
+	}
+
+	receiver, err := s.accountRepo.GetUserByAccountId(strconv.FormatInt(data.ReceiverID, 10))
+	if err != nil {
+		return dto.DeleteFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "receiver not found")
+	}
+
+	// 2. Tìm mối quan hệ theo cả hai chiều
+	friendShip, err := s.friendShipRepo.FindBySenderAndReceiver(sender.ID, receiver.ID)
+	if err != nil || (friendShip == entity.FriendShip{}) {
+		friendShip, err = s.friendShipRepo.FindBySenderAndReceiver(receiver.ID, sender.ID)
+		if err != nil || (friendShip == entity.FriendShip{}) {
+			return dto.DeleteFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "friendship not found")
+		}
+	}
+
+	// 3. Xóa quan hệ bạn bè
+	friendShipDeleted, err := s.friendShipRepo.DeleteByID(friendShip.ID); 
+	if err != nil {
+		return dto.DeleteFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "failed to delete friendship")
+	}
+
+	// 4. Trả response
+	return dto.DeleteFriendShipOutputDTO{
+		SenderID:   int64(friendShipDeleted.SenderID),
+		ReceiverID: int64(friendShipDeleted.ReceiverID),
+		IsSuccess:  true,
+	}, nil
+}
+
 
 // GetListReceiveFriendShips implements IFriendShipService.
 func (s *friendShipService) GetListReceiveFriendShips(id string) (dto.GetFriendShipOutputDTO, error) {
