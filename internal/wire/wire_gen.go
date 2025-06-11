@@ -35,3 +35,12 @@ func InitModuleAccount() (*controller.AccountController, error) {
 	accountController := controller.NewAccountController(iAccountService)
 	return accountController, nil
 }
+
+func InitModuleFriendShip() (*controller.FriendShipController, error) {
+	iFriendShipRepository := reporitory.NewFriendShipRepository()
+	iAccountRepository := reporitory.NewAccountRepository()
+	iProfileRepository := reporitory.NewProfileRepository()
+	iFriendShipService := service.NewFriendShipService(iFriendShipRepository, iAccountRepository, iProfileRepository)
+	friendShipController := controller.NewFriendShipController(iFriendShipService)
+	return friendShipController, nil
+}

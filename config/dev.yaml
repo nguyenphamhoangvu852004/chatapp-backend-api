@@ -1,6 +1,6 @@
 server:
   mode: "dev"
-  port: 8080
+  port: 8081
 
 cors:
   url: "http://localhost:5173"

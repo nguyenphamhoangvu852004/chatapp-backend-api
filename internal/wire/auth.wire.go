@@ -37,3 +37,14 @@ func InitModuleAccount() (*controller.AccountController, error) {
 	)
 	return new(controller.AccountController), nil
 }
+
+func InitModuleFriendShip() (*controller.FriendShipController, error) {
+	wire.Build(
+		reporitory.NewFriendShipRepository,
+		reporitory.NewAccountRepository,
+		reporitory.NewProfileRepository,
+		service.NewFriendShipService,
+		controller.NewFriendShipController,
+	)
+	return new(controller.FriendShipController), nil
+}

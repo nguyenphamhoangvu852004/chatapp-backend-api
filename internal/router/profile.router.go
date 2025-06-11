@@ -18,7 +18,6 @@ func (userRouter *ProfileRouter) InitProfileRouter(router *gin.RouterGroup) {
 		//update
 		profilePublicRouter.PUT("/:id", middleware.UploadProfileAccountToCloudinary(), profileController.Update)
 	}
-
 	// //private router
 	// userPrivateRouter := router.Group("/user")
 	// // userPrivateRouter.Use(middleware.Limiter())
@@ -27,5 +26,4 @@ func (userRouter *ProfileRouter) InitProfileRouter(router *gin.RouterGroup) {
 	// {
 	// 	userPrivateRouter.GET("/getInfo/:id")
 	// }
-
 }
