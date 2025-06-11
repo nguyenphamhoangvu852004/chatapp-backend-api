@@ -17,11 +17,12 @@ type IFriendShipRepository interface {
 	GetByAccountID(id uint) (entity.FriendShip, error)
 	DeleteByID(id uint) (entity.FriendShip, error)
 	FindBySenderAndReceiver(senderId uint, receiverId uint) (entity.FriendShip, error)
-	FindAllReceivedFriendRequests(accountID string) ([]entity.Account, error) 
+	FindAllReceivedFriendRequests(accountID string) ([]entity.Account, error)
 }
 
 type friendShipRepository struct {
 }
+
 func (r *friendShipRepository) FindAllReceivedFriendRequests(accountID string) ([]entity.Account, error) {
 	var friendShips []entity.FriendShip
 	var senders []entity.Account
@@ -72,8 +73,6 @@ func (r *friendShipRepository) FindAllFriendOfAccount(accountID string) ([]entit
 
 	return friends, nil
 }
-
-
 
 // FindAllSendFriendShips implements IFriendShipRepository.
 func (r *friendShipRepository) FindAllSendFriendShips(id string) ([]entity.FriendShip, error) {
@@ -139,7 +138,16 @@ func (p *friendShipRepository) Create(profile entity.FriendShip) (entity.FriendS
 
 // DeleteByID implements IFriendShipRepository.
 func (p *friendShipRepository) DeleteByID(id uint) (entity.FriendShip, error) {
-	panic("unimplemented")
+	var friendShip entity.FriendShip
+	result := global.Mdb.First(&friendShip, id)
+	if result.Error != nil {
+		return entity.FriendShip{}, result.Error
+	}
+	deleteResult := global.Mdb.Unscoped().Delete(&friendShip)
+	if deleteResult.Error != nil {
+		return entity.FriendShip{}, deleteResult.Error
+	}
+	return friendShip, nil
 }
 
 // GetByAccountID implements IFriendShipRepository.

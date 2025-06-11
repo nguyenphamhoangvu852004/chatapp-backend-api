@@ -64,3 +64,14 @@ type Receiver struct {
 	ImageURL string `json:"imageUrl"`
 	Status   string `json:"status"`
 }
+
+type DeleteFriendShipInputDTO struct {
+	SenderID   int64 `json:"senderId"`
+	ReceiverID int64 `json:"receiverId"`
+}
+
+type DeleteFriendShipOutputDTO struct {
+	SenderID   int64 `json:"senderId"`
+	ReceiverID int64 `json:"receiverId"`
+	IsSuccess  bool  `json:"isSuccess"`
+}
