@@ -17,7 +17,6 @@ type FriendShipController struct {
 
 func NewFriendShipController(friendShipService service.IFriendShipService) *FriendShipController {
 	return &FriendShipController{friendShipService: friendShipService}
-
 }
 
 func (controllet *FriendShipController) Delete(c *gin.Context){

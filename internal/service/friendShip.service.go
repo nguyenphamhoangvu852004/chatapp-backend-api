@@ -21,9 +21,11 @@ type IFriendShipService interface {
 }
 
 type friendShipService struct {
-	friendShipRepo reporitory.IFriendShipRepository
-	accountRepo    reporitory.IAccountRepository
-	profileRepo    reporitory.IProfileRepository
+	friendShipRepo   reporitory.IFriendShipRepository
+	accountRepo      reporitory.IAccountRepository
+	profileRepo      reporitory.IProfileRepository
+	conversationRepo reporitory.IConversationRepository
+	participantRepo  reporitory.IParticipantRepository
 }
 
 // Delete implements IFriendShipService.
@@ -49,10 +51,12 @@ func (s *friendShipService) Delete(data dto.DeleteFriendShipInputDTO) (dto.Delet
 	}
 
 	// 3. Xóa quan hệ bạn bè
-	friendShipDeleted, err := s.friendShipRepo.DeleteByID(friendShip.ID); 
+	friendShipDeleted, err := s.friendShipRepo.DeleteByID(friendShip.ID)
 	if err != nil {
 		return dto.DeleteFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "failed to delete friendship")
 	}
+
+	// Xoá hết trong cái bảng conversation luôn
 
 	// 4. Trả response
 	return dto.DeleteFriendShipOutputDTO{
@@ -61,7 +65,6 @@ func (s *friendShipService) Delete(data dto.DeleteFriendShipInputDTO) (dto.Delet
 		IsSuccess:  true,
 	}, nil
 }
-
 
 // GetListReceiveFriendShips implements IFriendShipService.
 func (s *friendShipService) GetListReceiveFriendShips(id string) (dto.GetFriendShipOutputDTO, error) {
@@ -116,14 +119,17 @@ func (s *friendShipService) GetListFriendShipsOfAccount(id string) (dto.GetFrien
 		return dto.GetFriendShipOutputDTO{}, err
 	}
 
+	// tim cai conversation tương ứng
 	var receivers []dto.Receiver
 	for _, acc := range friendAccounts {
+		conversation, _ := s.conversationRepo.FindConversationBetweenTwo(account.ID, acc.ID)
 		receiver := dto.Receiver{
 			ID:       acc.ID,
 			Username: acc.Username,
 			Email:    acc.Email,
 			ImageURL: "",
 			Status:   "ACCEPTED",
+			ConversationID: conversation.ID,
 		}
 		if acc.Profile != nil {
 			receiver.ImageURL = acc.Profile.AvatarURL
@@ -245,6 +251,42 @@ func (f *friendShipService) Update(data dto.UpdateFriendShipInputDTO) (dto.Updat
 		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to update friendship")
 	}
 
+	// tao 1 row converation o day
+	var conversationEntity = entity.Conversation{
+		IsGroup: false,
+	}
+
+	conversationCreated, err := f.conversationRepo.Create(conversationEntity)
+	if err != nil {
+		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to create conversation")
+	}
+
+	// toa 1 row để 2 người chat ne
+	// 2 người sẽ giao tiếp qua cái conversationID hết á
+	receiverIDUint, err = strconv.ParseUint(data.ReceiverID, 10, 64)
+	if err != nil {
+		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid receiver ID")
+	}
+	var participantEntity1 = entity.Participant{
+		AccountID:      uint(receiverIDUint),
+		ConversationID: conversationCreated.ID,
+		Role:           "member",
+	}
+	_, err = f.participantRepo.Create(participantEntity1)
+	senderIDUint, err = strconv.ParseUint(data.SenderID, 10, 64)
+	if err != nil {
+		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid sender ID")
+	}
+	var participantEntity2 = entity.Participant{
+		AccountID:      uint(senderIDUint),
+		ConversationID: conversationCreated.ID,
+		Role:           "member",
+	}
+	_, err = f.participantRepo.Create(participantEntity2)
+	if err != nil {
+		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to create participant")
+	}
+
 	return dto.UpdateFriendShipOutputDTO{
 		SenderID:   data.SenderID,
 		ReceiverID: data.ReceiverID,
@@ -293,6 +335,6 @@ func (f *friendShipService) Create(data dto.CreateFriendShipInputDTO) (dto.Creat
 	}, nil
 }
 
-func NewFriendShipService(friendShipRepo reporitory.IFriendShipRepository, accountRepo reporitory.IAccountRepository, profileRepo reporitory.IProfileRepository) IFriendShipService {
-	return &friendShipService{friendShipRepo: friendShipRepo, accountRepo: accountRepo, profileRepo: profileRepo}
+func NewFriendShipService(friendShipRepo reporitory.IFriendShipRepository, accountRepo reporitory.IAccountRepository, profileRepo reporitory.IProfileRepository, participantRepo reporitory.IParticipantRepository, conversationRepo reporitory.IConversationRepository) IFriendShipService {
+	return &friendShipService{friendShipRepo: friendShipRepo, accountRepo: accountRepo, profileRepo: profileRepo, participantRepo: participantRepo, conversationRepo: conversationRepo}
 }

@@ -31,7 +31,8 @@ func InitModuleProfile() (*controller.ProfileController, error) {
 
 func InitModuleAccount() (*controller.AccountController, error) {
 	iAccountRepository := reporitory.NewAccountRepository()
-	iAccountService := service.NewAccountService(iAccountRepository)
+	iBlockRepository := reporitory.NewBlockRepository()
+	iAccountService := service.NewAccountService(iAccountRepository, iBlockRepository)
 	accountController := controller.NewAccountController(iAccountService)
 	return accountController, nil
 }
@@ -40,7 +41,23 @@ func InitModuleFriendShip() (*controller.FriendShipController, error) {
 	iFriendShipRepository := reporitory.NewFriendShipRepository()
 	iAccountRepository := reporitory.NewAccountRepository()
 	iProfileRepository := reporitory.NewProfileRepository()
-	iFriendShipService := service.NewFriendShipService(iFriendShipRepository, iAccountRepository, iProfileRepository)
+	iParticipantRepository := reporitory.NewParticiapntRepository()
+	iConversationRepository := reporitory.NewConversationRepository()
+	iFriendShipService := service.NewFriendShipService(iFriendShipRepository, iAccountRepository, iProfileRepository, iParticipantRepository, iConversationRepository)
 	friendShipController := controller.NewFriendShipController(iFriendShipService)
 	return friendShipController, nil
+}
+
+func InitModuleBlock() (*controller.BlockController, error) {
+	iBlockRepository := reporitory.NewBlockRepository()
+	iBlockService := service.NewBlockService(iBlockRepository)
+	blockController := controller.NewBlockController(iBlockService)
+	return blockController, nil
+}
+
+func InitModuleMessage() (*controller.MessageController, error) {
+	iMessageRepository := reporitory.NewMessageRepository()
+	iMessageService := service.NewMessageService(iMessageRepository)
+	messageController := controller.NewMessageController(iMessageService)
+	return messageController, nil
 }

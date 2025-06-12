@@ -6,19 +6,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AccountRouter struct {
+type MessageRouter struct {
 }
 
-func (accountRouter *AccountRouter) InitAccountRouter(router *gin.RouterGroup) {
+func (messageRouter *MessageRouter) InitMessageRouter(router *gin.RouterGroup) {
 	//public router
-	authController, _ := wire.InitModuleAccount()
-	authPublicRouter := router.Group("/accounts")
+	messageController, _ := wire.InitModuleMessage()
+	messagePublicRouter := router.Group("/messages")
 	{
-		authPublicRouter.GET("", authController.GetList)
-		authPublicRouter.GET("/detail/:id", authController.GetDetail)
-	}
-	{
-
+		//update
+		messagePublicRouter.POST("", messageController.Create)
+		messagePublicRouter.GET("/me/:id", messageController.GetMessages)
 	}
 	// //private router
 	// userPrivateRouter := router.Group("/user")
@@ -28,5 +26,4 @@ func (accountRouter *AccountRouter) InitAccountRouter(router *gin.RouterGroup) {
 	// {
 	// 	userPrivateRouter.GET("/getInfo/:id")
 	// }
-
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"chapapp-backend-api/internal/dto"
+	"chapapp-backend-api/internal/entity"
 	"chapapp-backend-api/internal/reporitory"
 	"fmt"
 	"time"
@@ -9,38 +10,64 @@ import (
 
 type IAccountService interface {
 	GetDetail(id string) (dto.GetAccountDetailOutputDTO, error)
-	GetList() ([]dto.GetAccountDetailOutputDTO, error)
+	GetList(data dto.GetListAccountInputDTO) ([]dto.GetAccountDetailOutputDTO, error)
 }
 
 type accountService struct {
 	accountRepo reporitory.IAccountRepository
+	blockRepo   reporitory.IBlockRepository
 }
 
 // GetList implements IAccountService.
-func (a *accountService) GetList() ([]dto.GetAccountDetailOutputDTO, error) {
-	res, err := a.accountRepo.GetList()
+func (a *accountService) GetList(data dto.GetListAccountInputDTO) ([]dto.GetAccountDetailOutputDTO, error) {
+	accounts, err := a.accountRepo.GetList()
 	if err != nil {
 		return nil, err
 	}
-	var result []dto.GetAccountDetailOutputDTO
-	for _, v := range res {
-		result = append(result, dto.GetAccountDetailOutputDTO{
-			Id:          fmt.Sprintf("%d", v.ID),
-			Username:    v.Username,
-			Email:       v.Email,
-			PhoneNumber: v.PhoneNumber,
+
+	// Get danh sách đã block hoặc bị block
+	var currentUserIDUint uint
+	fmt.Sscanf(data.CurrentUserId, "%d", &currentUserIDUint)
+	blockedIDs, _ := a.blockRepo.GetListBlocker(currentUserIDUint)
+	blockedMeIDs, _ := a.blockRepo.GetListBlocked(currentUserIDUint)
+
+	// Dùng map cho nhanh
+	blockMap := map[string]bool{}
+	for _, block := range blockedIDs {
+		blockMap[fmt.Sprintf("%v", block.BlockedID)] = true
+	}
+	for _, block := range blockedMeIDs {
+		blockMap[fmt.Sprintf("%v", block.BlockerID)] = true
+	}
+
+	// Filter
+	var result []entity.Account
+	for _, acc := range accounts {
+		if !blockMap[fmt.Sprintf("%v", acc.ID)] {
+			result = append(result, acc)
+		}
+	}
+
+	var listOutDTO []dto.GetAccountDetailOutputDTO
+	for _, acc := range result {
+		listOutDTO = append(listOutDTO, dto.GetAccountDetailOutputDTO{
+			Id:          fmt.Sprintf("%d", acc.ID),
+			Username:    acc.Username,
+			Email:       acc.Email,
+			PhoneNumber: acc.PhoneNumber,
 			Profile: dto.GetProfileDetailOutputDTO{
-				Id:        fmt.Sprintf("%d", v.Profile.ID),
-				FullName:  v.Profile.FullName,
-				Bio:       v.Profile.Bio,
-				AvatarURL: v.Profile.AvatarURL,
-				CoverURL:  v.Profile.CoverURL,
-				CreatedAt: v.Profile.CreatedAt.Format(time.RFC3339),
-				UpdatedAt: v.Profile.UpdatedAt.Format(time.RFC3339),
+				Id:        fmt.Sprintf("%d", acc.Profile.ID),
+				FullName:  acc.Profile.FullName,
+				Bio:       acc.Profile.Bio,
+				AvatarURL: acc.Profile.AvatarURL,
+				CoverURL:  acc.Profile.CoverURL,
+				CreatedAt: acc.Profile.CreatedAt.Format(time.RFC3339),
+				UpdatedAt: acc.Profile.UpdatedAt.Format(time.RFC3339),
 			},
 		})
 	}
-	return result, nil
+
+	return listOutDTO, nil
 }
 
 // GetDetail implements IAccountService.
@@ -66,6 +93,7 @@ func (a *accountService) GetDetail(id string) (dto.GetAccountDetailOutputDTO, er
 	}, nil
 }
 
-func NewAccountService(accountRepo reporitory.IAccountRepository) IAccountService {
-	return &accountService{accountRepo: accountRepo}
+func NewAccountService(accountRepo reporitory.IAccountRepository, blockRepo reporitory.IBlockRepository) IAccountService {
+	return &accountService{accountRepo: accountRepo,
+		blockRepo: blockRepo}
 }

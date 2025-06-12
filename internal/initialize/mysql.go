@@ -36,6 +36,7 @@ func InitMysql() {
 	// fromMysqlToGorm()
 }
 
+
 func SetPool() {
 	m := global.Config.Mysql
 	sqlDB, err := global.Mdb.DB()
@@ -69,15 +70,14 @@ func SetPool() {
 
 func migrateTable() {
 	err := global.Mdb.AutoMigrate(
-		// &database.Account{},
-		// &database.Profile{},
 		&entity.Account{},
 		&entity.Conversation{},
-		&entity.ConversationParticipant{},
+		&entity.Participant{},
 		&entity.Profile{},
 		&entity.FriendShip{},
 		&entity.Message{},
 		&entity.MessageRead{},
+		&entity.Block{},
 	)
 	if err != nil {
 		global.Logger.Error(err.Error())

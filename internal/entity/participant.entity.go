@@ -1,11 +1,6 @@
 package entity
 
-import (
-	"time"
-
-)
-
-type ConversationParticipant struct {
+type Participant struct {
 	BaseEntity
 	AccountID      uint
 	Account        Account `gorm:"constraint:OnDelete:CASCADE"`
@@ -13,9 +8,8 @@ type ConversationParticipant struct {
 	ConversationID uint
 	Conversation   Conversation `gorm:"constraint:OnDelete:CASCADE"`
 	Role           string       `gorm:"type:enum('admin','member');default:'member'"`
-	JoinedAt       time.Time
 }
 
-func (ConversationParticipant) TableName() string {
-	return "conversation_participants"
+func (Participant) TableName() string {
+	return "participants"
 }

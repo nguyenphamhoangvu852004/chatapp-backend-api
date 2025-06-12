@@ -34,6 +34,7 @@ func InitModuleAccount() (*controller.AccountController, error) {
 		controller.NewAccountController,
 		service.NewAccountService,
 		reporitory.NewAccountRepository,
+		reporitory.NewBlockRepository,
 	)
 	return new(controller.AccountController), nil
 }
@@ -43,8 +44,28 @@ func InitModuleFriendShip() (*controller.FriendShipController, error) {
 		reporitory.NewFriendShipRepository,
 		reporitory.NewAccountRepository,
 		reporitory.NewProfileRepository,
+		reporitory.NewConversationRepository,
+		reporitory.NewParticiapntRepository,
 		service.NewFriendShipService,
 		controller.NewFriendShipController,
 	)
 	return new(controller.FriendShipController), nil
+}
+
+func InitModuleBlock() (*controller.BlockController, error) {
+	wire.Build(
+		reporitory.NewBlockRepository,
+		service.NewBlockService,
+		controller.NewBlockController,
+	)
+	return new(controller.BlockController), nil
+}
+
+func InitModuleMessage() (*controller.MessageController, error) {
+	wire.Build(
+		reporitory.NewMessageRepository,
+		service.NewMessageService,
+		controller.NewMessageController,
+	)
+	return new(controller.MessageController), nil
 }
