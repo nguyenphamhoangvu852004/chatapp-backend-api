@@ -1,18 +1,18 @@
 package setting
 
 type Config struct {
-	Redis  Redis  `mapstructure:"redis"`
-	Mysql  Mysql  `mapstructure:"mysql"`
-	Log    Log    `mapstructure:"log"`
-	Server Server `mapstructure:"server"`
-	Jwt    Jwt    `mapstructure:"jwt"`
-	Cors   Cors   `mapstructure:"cors"`
+	Redis      Redis      `mapstructure:"redis"`
+	Mysql      Mysql      `mapstructure:"mysql"`
+	Log        Log        `mapstructure:"log"`
+	Server     Server     `mapstructure:"server"`
+	Jwt        Jwt        `mapstructure:"jwt"`
+	Cors       Cors       `mapstructure:"cors"`
 	Cloudinary Cloudinary `mapstructure:"cloudinary"`
 }
-type Cloudinary struct{
-	CloudName string  `mapstructure:"cloud_name"`
-	ApiKey    string  `mapstructure:"api_key"`
-	ApiSecret string  `mapstructure:"api_secret"`
+type Cloudinary struct {
+	CloudName string `mapstructure:"cloud_name"`
+	ApiKey    string `mapstructure:"api_key"`
+	ApiSecret string `mapstructure:"api_secret"`
 }
 
 type Cors struct {
@@ -25,8 +25,9 @@ type Jwt struct {
 	RefreshTokenExpiriedTime int    `mapstructure:"refreshSecretExpiriedTime"`
 }
 type Server struct {
-	Mode string `mapstructure:"mode"`
-	Port int    `mapstructure:"port"`
+	Mode       string `mapstructure:"mode"`
+	Port       int    `mapstructure:"port"`
+	SocketPort int    `mapstructure:"socketPort"`
 }
 
 type Redis struct {

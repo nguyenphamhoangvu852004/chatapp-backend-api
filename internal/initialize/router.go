@@ -3,6 +3,7 @@ package initialize
 import (
 	"chapapp-backend-api/global"
 	"chapapp-backend-api/internal/router"
+	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -26,15 +27,19 @@ func InitRouter() *gin.Engine {
 
 	// CORS config
 	config := cors.Config{
-		AllowOrigins: []string{global.Config.Cors.Url},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
-		AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
-		// AllowCredentials: true,
+		AllowOrigins:     []string{global.Config.Cors.Url},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
 		// MaxAge:           12 * time.Hour,
 	}
 	// r.Use() //corss
 	r.Use(cors.New(config))
-
+	// socketio
+	// Mount socket vào router như middleware handler
+	// mux.Handle("/socket.io/", r)
+	// r.GET("/socket.io/*any", gin.WrapH(mux))
+	// r.POST("/socket.io/*any", gin.WrapH(mux))
 	// r.Use() //limiter globale
 
 	authRouter := router.RouterGroupApp.AuthRouter
@@ -56,5 +61,6 @@ func InitRouter() *gin.Engine {
 		messageRouter.InitMessageRouter(mainGroup)
 	}
 
+	r.Run(":" + strconv.Itoa(global.Config.Server.Port))
 	return r
 }
