@@ -3,7 +3,7 @@ server:
   port: 8081
   socketPort: 8082
 cors:
-  url: "http://127.0.0.1:5500"
+  url: "http://localhost:5173"
 
 mysql:
   host: "localhost"

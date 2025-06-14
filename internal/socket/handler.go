@@ -49,7 +49,17 @@ func RegisterHandlers() {
 			fmt.Println("➡️ Joining room:", room)
 			client.Join(socket.Room(room))
 		})
+		// client.On("join room by userId", func(args ...any) {
+		// 	room := args[0].(string)
+		// 	fmt.Println("➡️ Joining room by userID:", room)
+		// 	client.Join(socket.Room(room))
+		// })
 
+		// client.On("join room by conversationId", func(args ...any) {
+		// 	room := args[0].(string)
+		// 	fmt.Println("➡️ Joining room by conversationsID:", room)
+		// 	client.Join(socket.Room(room))
+		// })
 		// Khi client gửi tin nhắn
 		client.On("chat message", func(args ...any) {
 			messageRepo := reporitory.NewMessageRepository()
@@ -80,7 +90,7 @@ func RegisterHandlers() {
 				"content":        content,
 				"type":           messageType,
 			})
-
+			fmt.Println("📤 Emitted to room:", room)
 		})
 
 		client.On("disconnect", func(...any) {
