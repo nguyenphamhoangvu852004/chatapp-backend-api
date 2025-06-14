@@ -11,11 +11,45 @@ import (
 type IAccountService interface {
 	GetDetail(id string) (dto.GetAccountDetailOutputDTO, error)
 	GetList(data dto.GetListAccountInputDTO) ([]dto.GetAccountDetailOutputDTO, error)
+	GetRandomList(accountId string) ([]dto.GetAccountDetailOutputDTO, error)
 }
 
 type accountService struct {
 	accountRepo reporitory.IAccountRepository
 	blockRepo   reporitory.IBlockRepository
+}
+
+// GetRandomList implements IAccountService.
+func (a *accountService) GetRandomList(accountId string) ([]dto.GetAccountDetailOutputDTO, error) {
+	accounts, err := a.accountRepo.GetRandomFive()
+	if err != nil {
+		return nil, err
+	}
+
+	var accountIdUint uint
+	fmt.Sscanf(accountId, "%d", &accountIdUint)
+
+	var listOutDTO []dto.GetAccountDetailOutputDTO
+	for _, acc := range accounts {
+		if acc.ID == accountIdUint {
+			continue
+		}
+		listOutDTO = append(listOutDTO, dto.GetAccountDetailOutputDTO{
+			Id:          fmt.Sprintf("%d", acc.ID),
+			Username:    acc.Username,
+			Email:       acc.Email,
+			PhoneNumber: acc.PhoneNumber,
+			Profile: dto.GetProfileDetailOutputDTO{
+				Id:        fmt.Sprintf("%d", acc.Profile.ID),
+				FullName:  acc.Profile.FullName,
+				Bio:       acc.Profile.Bio,
+				AvatarURL: acc.Profile.AvatarURL,
+				CoverURL:  acc.Profile.CoverURL,
+			},
+		})
+	}
+
+	return listOutDTO, nil
 }
 
 // GetList implements IAccountService.

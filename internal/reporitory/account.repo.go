@@ -7,6 +7,7 @@ import (
 
 type IAccountRepository interface {
 	GetList() ([]entity.Account, error)
+	GetRandomFive() ([]entity.Account, error)
 	GetUserByEmail(email string) (entity.Account, error)
 	GetUserByUsername(username string) (entity.Account, error)
 	GetUserByAccountId(id string) (entity.Account, error)
@@ -15,6 +16,16 @@ type IAccountRepository interface {
 }
 
 type accountRepository struct {
+}
+
+// GetRandomFive implements IAccountRepository.
+func (a *accountRepository) GetRandomFive() ([]entity.Account, error) {
+	var accounts []entity.Account
+	err := global.Mdb.Preload("Profile").Limit(5).Order("RAND()").Find(&accounts).Error
+	if err != nil {
+		return nil, err
+	}
+	return accounts, nil
 }
 
 // GetList implements IAccountRepository.
