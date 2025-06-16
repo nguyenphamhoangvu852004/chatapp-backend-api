@@ -38,17 +38,17 @@ func (m *MessageController) Create(c *gin.Context) {
 func (c *MessageController) GetMessages(ctx *gin.Context) {
 	var input dto.GetListMessageInputDTO
 	if err := ctx.ShouldBindQuery(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query"})
+		response.ErrorReponse(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	result, err := c.messageService.GetList(input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.ErrorReponse(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	ctx.JSON(http.StatusOK, result)
+	response.SuccessReponse(ctx, http.StatusOK, result)
 }
 
 func NewMessageController(messageService service.IMessageService) *MessageController {

@@ -61,3 +61,11 @@ func InitModuleMessage() (*controller.MessageController, error) {
 	messageController := controller.NewMessageController(iMessageService)
 	return messageController, nil
 }
+
+func InitModuleConversation() (*controller.ConversationController, error) {
+	iConversationRepository := reporitory.NewConversationRepository()
+	iParticipantRepository := reporitory.NewParticiapntRepository()
+	iConversationSerivce := service.NewConversationService(iConversationRepository, iParticipantRepository)
+	conversationController := controller.NewConversationController(iConversationSerivce)
+	return conversationController, nil
+}

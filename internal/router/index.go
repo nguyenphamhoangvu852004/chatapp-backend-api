@@ -7,6 +7,7 @@ type RouterGroup struct {
 	FriendShipRouter
 	// BlockRouter
 	MessageRouter
+	ConversationRouter
 }
 
 var RouterGroupApp = new(RouterGroup)

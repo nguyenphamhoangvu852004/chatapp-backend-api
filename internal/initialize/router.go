@@ -48,6 +48,7 @@ func InitRouter() *gin.Engine {
 	friendShipRouter := router.RouterGroupApp.FriendShipRouter
 	// blockRouter := router.RouterGroupApp.BlockRouter
 	messageRouter := router.RouterGroupApp.MessageRouter
+	conversationRouter := router.RouterGroupApp.ConversationRouter
 	mainGroup := r.Group("/api/v1")
 	{
 		mainGroup.GET("/checkStatus", func(c *gin.Context) { c.JSON(200, gin.H{"message": "ok"}) }) // tracking monitor
@@ -59,6 +60,7 @@ func InitRouter() *gin.Engine {
 		friendShipRouter.InitFriendShipRouter(mainGroup)
 		// blockRouter.InitBlockRouter(mainGroup)
 		messageRouter.InitMessageRouter(mainGroup)
+		conversationRouter.InitConversationRouter(mainGroup)
 	}
 
 	r.Run(":" + strconv.Itoa(global.Config.Server.Port))

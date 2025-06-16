@@ -69,3 +69,13 @@ func InitModuleMessage() (*controller.MessageController, error) {
 	)
 	return new(controller.MessageController), nil
 }
+
+func InitModuleConversation() (*controller.ConversationController, error) {
+	wire.Build(
+		reporitory.NewConversationRepository,
+		reporitory.NewParticiapntRepository,
+		service.NewConversationService,
+		controller.NewConversationController,
+	)
+	return new(controller.ConversationController), nil
+}
