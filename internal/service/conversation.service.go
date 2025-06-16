@@ -12,6 +12,8 @@ import (
 )
 
 type IConversationSerivce interface {
+	GetConversationMembers(conversationIdStr string) (dto.GetListMembersOuputDTO, error)
+	ModifyConversation(data dto.ModifyConversationInputDTO) (dto.ModifyConversationOutputDTO, error)
 	Create(data dto.CreateConversationInputDTO) (dto.CreateConversationOutputDTO, error)
 	GetGroupListWhereUserIsAdmin(accountId string) ([]dto.GetConversationOutputDTO, error)
 	AddMembers(data dto.AddMemberInputDTO) (dto.AddMemberOutputDTO, error)
@@ -22,8 +24,93 @@ type IConversationSerivce interface {
 
 type conversationService struct {
 	conversationRepo reporitory.IConversationRepository
+	participantRepo  reporitory.IParticipantRepository
+}
 
-	participantRepo reporitory.IParticipantRepository
+// GetListMembers implements IConversationSerivce.
+func (s *conversationService) GetConversationMembers(conversationIdStr string) (dto.GetListMembersOuputDTO, error) {
+	// parse id
+	conversationId, err := strconv.ParseUint(conversationIdStr, 10, 64)
+	if err != nil {
+		return dto.GetListMembersOuputDTO{}, fmt.Errorf("invalid conversationId")
+	}
+
+	participants, err := s.conversationRepo.GetMembersByConversationID(uint(conversationId))
+	if err != nil {
+		return dto.GetListMembersOuputDTO{}, err
+	}
+
+	var members []dto.Member
+	for _, p := range participants {
+		member := dto.Member{
+			AccountId:   fmt.Sprintf("%d", p.AccountID),
+			Email:       p.Account.Email,
+			PhoneNumber: p.Account.PhoneNumber,
+			Username:    p.Account.Username,
+			AvatarURL:   "",
+			Role:        p.Role,
+		}
+		if p.Account.Profile != nil {
+			member.AvatarURL = p.Account.Profile.AvatarURL
+		}
+		members = append(members, member)
+	}
+
+	return dto.GetListMembersOuputDTO{
+		ConversationId: conversationIdStr,
+		Members:        members,
+	}, nil
+}
+
+// ModifyConversation implements IConversationSerivce.
+func (s *conversationService) ModifyConversation(data dto.ModifyConversationInputDTO) (dto.ModifyConversationOutputDTO, error) {
+	if data.OwnerId == "" {
+		return dto.ModifyConversationOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "owner ID is required")
+	}
+	if data.ConversationId == "" {
+		return dto.ModifyConversationOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "conversation ID is required")
+	}
+
+	// tim kiem cai conversation do
+	conversationIdUint, err := strconv.ParseUint(data.ConversationId, 10, 64)
+	if err != nil {
+		return dto.ModifyConversationOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "invalid conversation ID")
+	}
+	conversationEntity, err := s.conversationRepo.FindById(uint(conversationIdUint))
+	if err != nil {
+		return dto.ModifyConversationOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "conversation not found")
+	}
+
+	//kiem tra co thuoc ve nguoi o khong
+	ownerIdUint, err := strconv.ParseUint(data.OwnerId, 10, 64)
+	if err != nil {
+		return dto.ModifyConversationOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "invalid owner ID")
+	}
+	rs, err := s.participantRepo.CheckIsAdmin(uint(ownerIdUint), uint(conversationIdUint))
+	if err != nil {
+		return dto.ModifyConversationOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "check owned error")
+	}
+	if rs == false {
+		return dto.ModifyConversationOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "you are not admin of this group")
+	}
+
+	if data.Name != nil {
+		conversationEntity.Name = *data.Name
+	}
+	if data.AvatarURL != nil {
+		conversationEntity.GroupAvatar = *data.AvatarURL
+	}
+	conversationEntity, err = s.conversationRepo.Update(conversationEntity)
+	if err != nil {
+		return dto.ModifyConversationOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to update conversation")
+	}
+	return dto.ModifyConversationOutputDTO{
+		ConversationId: fmt.Sprintf("%d", conversationEntity.ID),
+		OwnerId:        data.OwnerId,
+		Name:           conversationEntity.Name,
+		AvatarURL:      conversationEntity.GroupAvatar,
+		IsSuccess:      true,
+	}, nil
 }
 
 func (s *conversationService) GetGroupsJoinedByMe(accountId string) ([]dto.GetJoinedGroupsOutputDTO, error) {

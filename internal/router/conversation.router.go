@@ -16,12 +16,14 @@ func (conversationRouter *ConversationRouter) InitConversationRouter(router *gin
 	conversationPublicRouter := router.Group("/conversations", middleware.AuthMiddleware())
 	{
 		//create
-		conversationPublicRouter.POST("/", middleware.UploadGroupAvatarToCloundinary(),conversationController.Create)
+		conversationPublicRouter.POST("/", middleware.UploadGroupAvatarToCloundinary(), conversationController.Create)
 		conversationPublicRouter.POST("/members", conversationController.AddMembers)
+		conversationPublicRouter.GET("/:id", conversationController.GetMembers)
 		conversationPublicRouter.GET("/owned/me/:id", conversationController.GetListOwnedByMe)
 		conversationPublicRouter.GET("/joined/me/:id", conversationController.GetGroupsJoinedByMe)
 		conversationPublicRouter.DELETE("/", conversationController.Delete)
 		conversationPublicRouter.DELETE("/members", conversationController.DeleteMembers)
+		conversationPublicRouter.PATCH("/", middleware.ModifyUploadGroupAvatarToCloundinary(), conversationController.ModifyConversation)
 		//Status
 		// conversationPublicRouter.PUT("/", conversationController.Update)
 		// //Get List

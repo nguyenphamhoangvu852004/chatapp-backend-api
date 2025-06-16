@@ -15,6 +15,48 @@ type ConversationController struct {
 	ConversationService service.IConversationSerivce
 }
 
+func (controller *ConversationController) GetMembers(c *gin.Context) {
+	conversationId := c.Param("id")
+	if conversationId == "" {
+		response.ErrorReponse(c, http.StatusBadRequest, "Missing conversationId")
+		return
+	}
+
+	res, err := controller.ConversationService.GetConversationMembers(conversationId)
+	if err != nil {
+		response.ErrorReponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.SuccessReponse(c, http.StatusOK, res)
+}
+
+func (controller *ConversationController) ModifyConversation(c *gin.Context) {
+	var inputDTO dto.ModifyConversationInputDTO
+
+	// ✅ Bind form-data text (ownerId, conversationId, name)
+	if err := c.ShouldBind(&inputDTO); err != nil {
+		response.ErrorReponse(c, http.StatusBadRequest, "Invalid input: "+err.Error())
+		return
+	}
+
+	// ✅ Lấy avatarUrl đã được middleware upload lên cloud
+	if avatarURL, ok := c.Get("avatarUrl"); ok {
+		if avatarStr, ok := avatarURL.(string); ok {
+			inputDTO.AvatarURL = &avatarStr
+		}
+	}
+
+	// ✅ Gọi service
+	res, err := controller.ConversationService.ModifyConversation(inputDTO)
+	if err != nil {
+		response.ErrorReponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.SuccessReponse(c, http.StatusOK, res)
+}
+
 func (controller *ConversationController) GetGroupsJoinedByMe(c *gin.Context) {
 	res, err := controller.ConversationService.GetGroupsJoinedByMe(c.Param("id"))
 	if err != nil {

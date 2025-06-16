@@ -82,6 +82,7 @@ func UploadGroupAvatarToCloundinary() gin.HandlerFunc {
 	cloud := global.Config.Cloudinary
 
 	avatar, err := c.FormFile("avatar")	
+
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "File is required"})
 		return
@@ -117,3 +118,45 @@ func UploadGroupAvatarToCloundinary() gin.HandlerFunc {
 	c.Next()
 	}
 }
+func ModifyUploadGroupAvatarToCloundinary() gin.HandlerFunc {
+	return func (c *gin.Context)  {
+	cloud := global.Config.Cloudinary
+
+	avatar, err := c.FormFile("avatar")	
+
+	if err != nil {
+		c.Next()
+		return
+	}
+
+	// đọc file hinh anh avatar
+	avatarFile, err := avatar.Open()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Cannot open file"})
+		return
+	}
+	defer avatarFile.Close()
+
+	// Khởi tạo Cloudinary
+	cld, err := cloudinary.NewFromParams(cloud.CloudName, cloud.ApiKey, cloud.ApiSecret)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
+		return
+	}
+
+	// Upload ảnh đại diện	
+	uploadAvatarRs, err := cld.Upload.Upload(context.Background(), avatarFile, uploader.UploadParams{
+		Folder:   "chatapp",
+		PublicID: uuid.New().String(),
+	})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Upload failed", "detail": err.Error()})
+		return
+	}
+
+	// Gắn URL file vào context để controller xài
+	c.Set("avatarUrl", uploadAvatarRs.SecureURL)
+	c.Next()
+	}
+}
+

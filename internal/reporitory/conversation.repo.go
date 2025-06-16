@@ -7,14 +7,38 @@ import (
 )
 
 type IConversationRepository interface {
+	GetMembersByConversationID(conversationID uint) ([]entity.Participant, error)
 	DeleteById(id uint) error
 	FindById(data uint) (entity.Conversation, error)
 	GetListOwnedByMe(data string) ([]dto.GetConversationOutputDTO, error)
 	FindConversationBetweenTwo(user1ID, user2ID uint) (*entity.Conversation, error)
 	Create(convention entity.Conversation) (entity.Conversation, error)
+	Update(convention entity.Conversation) (entity.Conversation, error)
 }
 
 type conversationRepository struct{}
+
+func (r *conversationRepository) GetMembersByConversationID(conversationID uint) ([]entity.Participant, error) {
+	var participants []entity.Participant
+	err := global.Mdb.
+		Preload("Account.Profile"). // load luôn avatar, fullname, ...
+		Where("conversation_id = ?", conversationID).
+		Find(&participants).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return participants, nil
+}
+
+// Update implements IConversationRepository.
+func (r *conversationRepository) Update(convention entity.Conversation) (entity.Conversation, error) {
+	result := global.Mdb.Save(&convention)
+	if result.Error != nil {
+		return entity.Conversation{}, result.Error
+	}
+	return convention, nil
+}
 
 func (r *conversationRepository) DeleteById(id uint) error {
 	return global.Mdb.Unscoped().Delete(&entity.Conversation{}, id).Error

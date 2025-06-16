@@ -87,3 +87,27 @@ type (
 		Members        []Member `json:"members"`
 	}
 )
+
+type (
+	ModifyConversationInputDTO struct {
+		OwnerId        string  `form:"ownerId"`
+		ConversationId string  `form:"conversationId"`
+		Name           *string `form:"name,omitempty"` // optional
+		AvatarURL      *string `form:"-"`
+	}
+
+	ModifyConversationOutputDTO struct {
+		ConversationId string `json:"conversationId"`
+		OwnerId        string `json:"ownerId"`
+		Name           string `json:"name"`
+		AvatarURL      string `json:"avatarUrl"`
+		IsSuccess      bool   `json:"isSuccess"`
+	}
+)
+
+type (
+	GetListMembersOuputDTO struct {
+		ConversationId string   `json:"conversationId"`
+		Members        []Member `json:"members"`
+	}
+)
