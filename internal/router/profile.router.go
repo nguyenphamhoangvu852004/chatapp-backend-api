@@ -13,7 +13,7 @@ type ProfileRouter struct {
 func (userRouter *ProfileRouter) InitProfileRouter(router *gin.RouterGroup) {
 	//public router
 	profileController, _ := wire.InitModuleProfile()
-	profilePublicRouter := router.Group("/profiles")
+	profilePublicRouter := router.Group("/profiles", middleware.AuthMiddleware())
 	{
 		//update
 		profilePublicRouter.PUT("/:id", middleware.UploadProfileAccountToCloudinary(), profileController.Update)

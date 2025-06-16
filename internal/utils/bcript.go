@@ -49,10 +49,11 @@ func GenerateToken(payload map[string]interface{}, secret []byte, ttl time.Durat
 	return token.SignedString(secret)
 }
 
-func GenerateAccessToken(userID uint, email string) (string, error) {
+func GenerateAccessToken(userID uint, email string, roles []string) (string, error) {
 	payload := map[string]interface{}{
 		"id":    userID,
 		"email": email,
+		"roles": roles,
 	}
 	return GenerateToken(payload, getAccessSecretKey(), getAccessTokenTTL())
 }

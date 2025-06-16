@@ -1,7 +1,9 @@
 package router
 
 import (
+	"chapapp-backend-api/internal/middleware"
 	"chapapp-backend-api/internal/wire"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +21,16 @@ func (userRouter *AuthRouter) InitAuthRouter(router *gin.RouterGroup) {
 		authPublicRouter.POST("/register", authController.Register)
 		authPublicRouter.POST("/login", authController.Login)
 		authPublicRouter.PUT("/resetPassword", authController.ResetPassword)
+		authPublicRouter.GET("/validateToken", middleware.AuthMiddleware(), func(c *gin.Context) {
+			userId, _ := c.Get("userId")
+			mail, _ := c.Get("email")
+			roles, _ := c.Get("roles")
+			if userId == nil || mail == nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID or Email not found in context"})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"userId": userId, "email": mail, "roles": roles, "isValid": true})
+		})
 	}
 
 	// //private router

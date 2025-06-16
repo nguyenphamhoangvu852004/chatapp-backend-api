@@ -1,6 +1,7 @@
 package router
 
 import (
+	"chapapp-backend-api/internal/middleware"
 	"chapapp-backend-api/internal/wire"
 
 	"github.com/gin-gonic/gin"
@@ -12,10 +13,10 @@ type ConversationRouter struct {
 func (conversationRouter *ConversationRouter) InitConversationRouter(router *gin.RouterGroup) {
 	//public router
 	conversationController, _ := wire.InitModuleConversation()
-	conversationPublicRouter := router.Group("/conversations")
+	conversationPublicRouter := router.Group("/conversations", middleware.AuthMiddleware())
 	{
 		//create
-		conversationPublicRouter.POST("/", conversationController.Create)
+		conversationPublicRouter.POST("/", middleware.UploadGroupAvatarToCloundinary(),conversationController.Create)
 		conversationPublicRouter.POST("/members", conversationController.AddMembers)
 		conversationPublicRouter.GET("/owned/me/:id", conversationController.GetListOwnedByMe)
 		conversationPublicRouter.GET("/joined/me/:id", conversationController.GetGroupsJoinedByMe)

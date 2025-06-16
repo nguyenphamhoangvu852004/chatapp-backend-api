@@ -70,8 +70,9 @@ func (dtoService *dtoService) Login(data dto.LoginInputDTO) (dto.LoginOutputDTO,
 	if account.Password != data.Password {
 		return dto.LoginOutputDTO{}, exception.NewCustomError(http.StatusUnauthorized, "Invalid password")
 	}
+	var roles []string = []string{}
 
-	var accToken, _ = utils.GenerateAccessToken(account.ID, account.Email)
+	var accToken, _ = utils.GenerateAccessToken(account.ID, account.Email, roles)
 	var refToken, _ = utils.GenerateRefreshToken(account.ID)
 
 	return dto.LoginOutputDTO{

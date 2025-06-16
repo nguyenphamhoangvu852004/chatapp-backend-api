@@ -1,6 +1,7 @@
 package router
 
 import (
+	"chapapp-backend-api/internal/middleware"
 	"chapapp-backend-api/internal/wire"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ type MessageRouter struct {
 func (messageRouter *MessageRouter) InitMessageRouter(router *gin.RouterGroup) {
 	//public router
 	messageController, _ := wire.InitModuleMessage()
-	messagePublicRouter := router.Group("/messages")
+	messagePublicRouter := router.Group("/messages", middleware.AuthMiddleware())
 	{
 		//update
 		messagePublicRouter.POST("", messageController.Create)

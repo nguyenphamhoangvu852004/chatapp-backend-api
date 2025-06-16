@@ -14,7 +14,8 @@ import (
 type ConversationController struct {
 	ConversationService service.IConversationSerivce
 }
-func (controller *ConversationController) GetGroupsJoinedByMe(c* gin.Context){
+
+func (controller *ConversationController) GetGroupsJoinedByMe(c *gin.Context) {
 	res, err := controller.ConversationService.GetGroupsJoinedByMe(c.Param("id"))
 	if err != nil {
 		var customErr *exception.CustomError
@@ -100,10 +101,10 @@ func (controller *ConversationController) GetListOwnedByMe(c *gin.Context) {
 
 func (controller *ConversationController) Create(c *gin.Context) {
 	var inputDTO = dto.CreateConversationInputDTO{
-		Name:      c.PostForm("name"),
-		OwnerId:   c.PostForm("ownerId"),
-		AvatarURL: "hihihihihi",
-		// AvatarURL: c.GetString("avatarUrl"),
+		Name:    c.PostForm("name"),
+		OwnerId: c.PostForm("ownerId"),
+		// AvatarURL: "hihihihihi",
+		AvatarURL: c.GetString("avatarUrl"),
 	}
 
 	result, err := controller.ConversationService.Create(inputDTO)
