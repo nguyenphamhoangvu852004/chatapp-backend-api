@@ -5,10 +5,12 @@ type (
 		SenderId       string `json:"senderId"`
 		ConversationId string `json:"conversationId"`
 		Content        string `json:"content"`
+		OriginFilename *string `json:"originFilename"`
 	}
 	CreateMessageOutputDTO struct {
 		MessageId string `json:"messageId"`
 		Content   string `json:"content"`
+		OriginFilename *string `json:"originFilename"`
 	}
 )
 

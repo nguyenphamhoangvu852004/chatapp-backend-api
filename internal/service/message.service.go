@@ -36,6 +36,7 @@ func (s *messageService) Create(data dto.CreateMessageInputDTO) (dto.CreateMessa
 		SenderID:       senderID,
 		ConversationID: conversationID,
 		Content:        data.Content,
+		OriginFilename: *data.OriginFilename,
 		MessageType:    "text",
 	}
 
@@ -45,8 +46,9 @@ func (s *messageService) Create(data dto.CreateMessageInputDTO) (dto.CreateMessa
 	}
 
 	return dto.CreateMessageOutputDTO{
-		MessageId: strconv.FormatUint(uint64(createdMessage.ID), 10),
-		Content:   createdMessage.Content,
+		MessageId:      strconv.FormatUint(uint64(createdMessage.ID), 10),
+		Content:        createdMessage.Content,
+		OriginFilename: &createdMessage.OriginFilename,
 	}, nil
 
 }
