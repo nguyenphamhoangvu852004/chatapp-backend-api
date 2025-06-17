@@ -46,7 +46,7 @@ func InitRouter() *gin.Engine {
 	profileRouter := router.RouterGroupApp.ProfileRouter
 	accountRouter := router.RouterGroupApp.AccountRouter
 	friendShipRouter := router.RouterGroupApp.FriendShipRouter
-	// blockRouter := router.RouterGroupApp.BlockRouter
+	blockRouter := router.RouterGroupApp.BlockRouter
 	messageRouter := router.RouterGroupApp.MessageRouter
 	conversationRouter := router.RouterGroupApp.ConversationRouter
 	mainGroup := r.Group("/api/v1")
@@ -58,7 +58,7 @@ func InitRouter() *gin.Engine {
 		profileRouter.InitProfileRouter(mainGroup)
 		accountRouter.InitAccountRouter(mainGroup)
 		friendShipRouter.InitFriendShipRouter(mainGroup)
-		// blockRouter.InitBlockRouter(mainGroup)
+		blockRouter.InitBlockRouter(mainGroup)
 		messageRouter.InitMessageRouter(mainGroup)
 		conversationRouter.InitConversationRouter(mainGroup)
 	}

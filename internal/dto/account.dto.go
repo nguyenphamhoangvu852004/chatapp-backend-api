@@ -1,11 +1,5 @@
 package dto
 
-type (
-	GetListAccountInputDTO struct {
-		GetBlock bool `form:"getBlock"`
-		CurrentUserId string `form:"currentUserId"` 	
-	}
-)
 
 type (
 	GetAccountDetailOutputDTO struct {

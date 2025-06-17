@@ -30,7 +30,6 @@ func (controller *BlockController) Create(c *gin.Context) {
 		}
 		return
 	}
-
 	response.SuccessReponse(c, http.StatusCreated, res)
 }
 
@@ -51,7 +50,20 @@ func (controller *BlockController) Delete(c *gin.Context) {
 	}
 	response.SuccessReponse(c, http.StatusOK, res)
 }
+func (controller *BlockController) GetList(c *gin.Context) {
 
+	res, err := controller.blockService.GetList(c.Param("id"))
+	if err != nil {
+		var customErr *exception.CustomError
+		if errors.As(err, &customErr) {
+			response.ErrorReponse(c, customErr.Code, customErr.Message)
+		} else {
+			response.ErrorReponse(c, 500, "internal server error")
+		}
+		return
+	}
+	response.SuccessReponse(c, http.StatusOK, res)
+}
 func NewBlockController(blockService service.IBlockService) *BlockController {
 	return &BlockController{blockService: blockService}
 }

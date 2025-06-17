@@ -16,6 +16,7 @@ func (blockRouter *BlockRouter) InitBlockRouter(router *gin.RouterGroup) {
 	{
 		blockPublicRouter.POST("/", blockController.Create)
 		blockPublicRouter.DELETE("/", blockController.Delete)
+		blockPublicRouter.GET("/me/:id", blockController.GetList)
 	}
 
 	// //private router

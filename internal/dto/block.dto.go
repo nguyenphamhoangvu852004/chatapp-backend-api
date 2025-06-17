@@ -23,3 +23,10 @@ type (
 		IsSuccess bool   `json:"isSuccess"`
 	}
 )
+
+type (
+	GetBlockListOutputDTO struct {
+		Me          GetAccountDetailOutputDTO   `json:"me"`
+		BlockedList []GetAccountDetailOutputDTO `json:"blockedList"`
+	}
+)

@@ -2,7 +2,6 @@ package service
 
 import (
 	"chapapp-backend-api/internal/dto"
-	"chapapp-backend-api/internal/entity"
 	"chapapp-backend-api/internal/reporitory"
 	"fmt"
 	"time"
@@ -10,7 +9,7 @@ import (
 
 type IAccountService interface {
 	GetDetail(id string) (dto.GetAccountDetailOutputDTO, error)
-	GetList(data dto.GetListAccountInputDTO) ([]dto.GetAccountDetailOutputDTO, error)
+	GetList() ([]dto.GetAccountDetailOutputDTO, error)
 	GetRandomList(accountId string) ([]dto.GetAccountDetailOutputDTO, error)
 }
 
@@ -53,55 +52,29 @@ func (a *accountService) GetRandomList(accountId string) ([]dto.GetAccountDetail
 }
 
 // GetList implements IAccountService.
-func (a *accountService) GetList(data dto.GetListAccountInputDTO) ([]dto.GetAccountDetailOutputDTO, error) {
-	accounts, err := a.accountRepo.GetList()
+func (a *accountService) GetList() ([]dto.GetAccountDetailOutputDTO, error) {
+	res, err := a.accountRepo.GetList()
 	if err != nil {
-		return nil, err
+		return []dto.GetAccountDetailOutputDTO{}, err
 	}
 
-	// Get danh sách đã block hoặc bị block
-	var currentUserIDUint uint
-	fmt.Sscanf(data.CurrentUserId, "%d", &currentUserIDUint)
-	blockedIDs, _ := a.blockRepo.GetListBlocker(currentUserIDUint)
-	blockedMeIDs, _ := a.blockRepo.GetListBlocked(currentUserIDUint)
-
-	// Dùng map cho nhanh
-	blockMap := map[string]bool{}
-	for _, block := range blockedIDs {
-		blockMap[fmt.Sprintf("%v", block.BlockedID)] = true
-	}
-	for _, block := range blockedMeIDs {
-		blockMap[fmt.Sprintf("%v", block.BlockerID)] = true
-	}
-
-	// Filter
-	var result []entity.Account
-	for _, acc := range accounts {
-		if !blockMap[fmt.Sprintf("%v", acc.ID)] {
-			result = append(result, acc)
+	var outputDTO []dto.GetAccountDetailOutputDTO
+	for _, entity := range res {
+		var account dto.GetAccountDetailOutputDTO
+		account.Id = fmt.Sprintf("%d", entity.ID)
+		account.Username = entity.Username
+		account.Email = entity.Email
+		account.PhoneNumber = entity.PhoneNumber
+		account.Profile = dto.GetProfileDetailOutputDTO{
+			Id:        fmt.Sprintf("%d", entity.Profile.ID),
+			FullName:  entity.Profile.FullName,
+			Bio:       entity.Profile.Bio,
+			AvatarURL: entity.Profile.AvatarURL,
+			CoverURL:  entity.Profile.CoverURL,
 		}
+		outputDTO = append(outputDTO, account)
 	}
-
-	var listOutDTO []dto.GetAccountDetailOutputDTO
-	for _, acc := range result {
-		listOutDTO = append(listOutDTO, dto.GetAccountDetailOutputDTO{
-			Id:          fmt.Sprintf("%d", acc.ID),
-			Username:    acc.Username,
-			Email:       acc.Email,
-			PhoneNumber: acc.PhoneNumber,
-			Profile: dto.GetProfileDetailOutputDTO{
-				Id:        fmt.Sprintf("%d", acc.Profile.ID),
-				FullName:  acc.Profile.FullName,
-				Bio:       acc.Profile.Bio,
-				AvatarURL: acc.Profile.AvatarURL,
-				CoverURL:  acc.Profile.CoverURL,
-				CreatedAt: acc.Profile.CreatedAt.Format(time.RFC3339),
-				UpdatedAt: acc.Profile.UpdatedAt.Format(time.RFC3339),
-			},
-		})
-	}
-
-	return listOutDTO, nil
+	return outputDTO, nil
 }
 
 // GetDetail implements IAccountService.

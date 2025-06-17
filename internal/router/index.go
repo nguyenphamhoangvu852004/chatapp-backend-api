@@ -5,7 +5,7 @@ type RouterGroup struct {
 	ProfileRouter
 	AccountRouter
 	FriendShipRouter
-	// BlockRouter
+	BlockRouter
 	MessageRouter
 	ConversationRouter
 }

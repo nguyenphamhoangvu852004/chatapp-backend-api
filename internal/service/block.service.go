@@ -5,19 +5,84 @@ import (
 	"chapapp-backend-api/internal/entity"
 	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/reporitory"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type IBlockService interface {
 	IsBlocked(id1 string, id2 string) (bool, error)
 	Create(data dto.CreateBlockInputDTO) (dto.CreateBlockOutputDTO, error)
 	Delete(data dto.DeleteBlockInputDTO) (dto.DeleteBlockOutputDTO, error)
+	GetList(data string) (dto.GetBlockListOutputDTO, error)
 }
 
 type blockService struct {
 	blockRepo reporitory.IBlockRepository
 }
+
+// GetList implements IBlockService.
+func (b *blockService) GetList(data string) (dto.GetBlockListOutputDTO, error) {
+	var outputDTO dto.GetBlockListOutputDTO
+
+	userID, err := strconv.ParseUint(data, 10, 64)
+	if err != nil {
+		return dto.GetBlockListOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid user ID")
+	}
+
+	// Lấy danh sách các block entity mà user là blocker
+	blocks, err := b.blockRepo.GetListBlocker(uint(userID))
+	if err != nil {
+		return dto.GetBlockListOutputDTO{}, err
+	}
+
+	// Nếu không có block nào thì return rỗng
+	if len(blocks) == 0 {
+		return outputDTO, nil
+	}
+
+	// Gán thông tin bản thân từ Blocker (lấy từ phần tử đầu tiên)
+	blocker := blocks[0].Blocker
+	outputDTO.Me = dto.GetAccountDetailOutputDTO{
+		Id:          fmt.Sprintf("%d", blocker.ID),
+		Username:    blocker.Username,
+		Email:       blocker.Email,
+		PhoneNumber: blocker.PhoneNumber,
+		Profile: dto.GetProfileDetailOutputDTO{
+			Id:        fmt.Sprintf("%d", blocker.Profile.ID),
+			FullName:  blocker.Profile.FullName,
+			Bio:       blocker.Profile.Bio,
+			AvatarURL: blocker.Profile.AvatarURL,
+			CoverURL:  blocker.Profile.CoverURL,
+			CreatedAt: blocker.Profile.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: blocker.Profile.UpdatedAt.Format(time.RFC3339),
+		},
+	}
+
+	// Gán danh sách những người bị block
+	for _, block := range blocks {
+		blocked := block.Blocked
+		outputDTO.BlockedList = append(outputDTO.BlockedList, dto.GetAccountDetailOutputDTO{
+			Id:          fmt.Sprintf("%d", blocked.ID),
+			Username:    blocked.Username,
+			Email:       blocked.Email,
+			PhoneNumber: blocked.PhoneNumber,
+			Profile: dto.GetProfileDetailOutputDTO{
+				Id:        fmt.Sprintf("%d", blocked.Profile.ID),
+				FullName:  blocked.Profile.FullName,
+				Bio:       blocked.Profile.Bio,
+				AvatarURL: blocked.Profile.AvatarURL,
+				CoverURL:  blocked.Profile.CoverURL,
+				CreatedAt: blocked.Profile.CreatedAt.Format(time.RFC3339),
+				UpdatedAt: blocked.Profile.UpdatedAt.Format(time.RFC3339),
+			},
+		})
+	}
+
+	return outputDTO, nil
+}
+
 
 // Delete implements IBlockService.
 func (b *blockService) Delete(data dto.DeleteBlockInputDTO) (dto.DeleteBlockOutputDTO, error) {

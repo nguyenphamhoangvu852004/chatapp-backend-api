@@ -1,12 +1,10 @@
 package controller
 
 import (
-	"chapapp-backend-api/internal/dto"
 	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/service"
 	"chapapp-backend-api/pkg/response"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -49,13 +47,7 @@ func (accountController *AccountController) GetDetail(c *gin.Context) {
 }
 
 func (accountController *AccountController) GetList(c *gin.Context) {
-	var inputDTO dto.GetListAccountInputDTO
-	if err := c.ShouldBindQuery(&inputDTO); err != nil {
-		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	fmt.Println(inputDTO)
-	result, err := accountController.accountService.GetList(inputDTO)
+	result, err := accountController.accountService.GetList()
 	if err != nil {
 		var customErr *exception.CustomError
 		if errors.As(err, &customErr) {

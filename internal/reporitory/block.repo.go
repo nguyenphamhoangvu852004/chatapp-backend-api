@@ -46,7 +46,7 @@ func (b *blockRepository) GetListBlocked(accountID uint) ([]entity.Block, error)
 // GetListBlocker implements IBlockRepository.
 func (b *blockRepository) GetListBlocker(accountID uint) ([]entity.Block, error) {
 	var blockers []entity.Block
-	result := global.Mdb.Where("blocker_id = ?", accountID).Find(&blockers)
+	result := global.Mdb.Preload("Blocked.Profile").Preload("Blocker.Profile").Where("blocker_id = ?", accountID).Find(&blockers)
 	if result.Error != nil {
 		return nil, result.Error
 	}
