@@ -43,24 +43,12 @@ func RegisterHandlers() {
 		client := clients[0].(*socket.Socket)
 		fmt.Println("✅ New client connected:", client.Id())
 
-		// Khi client join 1 room (theo conversationId)
 		client.On("join room", func(args ...any) {
 			room := args[0].(string)
 			fmt.Println("➡️ Joining room:", room)
 			client.Join(socket.Room(room))
 		})
-		// client.On("join room by userId", func(args ...any) {
-		// 	room := args[0].(string)
-		// 	fmt.Println("➡️ Joining room by userID:", room)
-		// 	client.Join(socket.Room(room))
-		// })
 
-		// client.On("join room by conversationId", func(args ...any) {
-		// 	room := args[0].(string)
-		// 	fmt.Println("➡️ Joining room by conversationsID:", room)
-		// 	client.Join(socket.Room(room))
-		// })
-		// Khi client gửi tin nhắn
 		client.On("chat message", func(args ...any) {
 			messageRepo := reporitory.NewMessageRepository()
 			messageService := service.NewMessageService(messageRepo)
@@ -101,6 +89,19 @@ func RegisterHandlers() {
 			fmt.Println("📤 Emitted to room:", room)
 		})
 
+		client.On("read message", func(args ...any) {
+			data := args[0].(map[string]any)
+			conversationID := uint(data["conversationId"].(float64))
+			readerID := uint(data["readerId"].(float64))
+			room := fmt.Sprintf("conversation_%d", conversationID)
+
+			fmt.Printf("Read message in conversation %d by user %d\n", conversationID, readerID)
+
+			IO.To(socket.Room(room)).Emit("message read", map[string]any{
+				"conversationId": conversationID,
+				"readerId":       readerID,
+			})
+		})
 		client.On("disconnect", func(...any) {
 			fmt.Println("❌ Client disconnected:", client.Id())
 		})
