@@ -43,14 +43,16 @@ func InitModuleFriendShip() (*controller.FriendShipController, error) {
 	iProfileRepository := reporitory.NewProfileRepository()
 	iParticipantRepository := reporitory.NewParticiapntRepository()
 	iConversationRepository := reporitory.NewConversationRepository()
-	iFriendShipService := service.NewFriendShipService(iFriendShipRepository, iAccountRepository, iProfileRepository, iParticipantRepository, iConversationRepository)
+	iBlockRepository := reporitory.NewBlockRepository()
+	iFriendShipService := service.NewFriendShipService(iFriendShipRepository, iAccountRepository, iProfileRepository, iParticipantRepository, iConversationRepository, iBlockRepository)
 	friendShipController := controller.NewFriendShipController(iFriendShipService)
 	return friendShipController, nil
 }
 
 func InitModuleBlock() (*controller.BlockController, error) {
 	iBlockRepository := reporitory.NewBlockRepository()
-	iBlockService := service.NewBlockService(iBlockRepository)
+	iFriendShipRepository := reporitory.NewFriendShipRepository()
+	iBlockService := service.NewBlockService(iBlockRepository, iFriendShipRepository)
 	blockController := controller.NewBlockController(iBlockService)
 	return blockController, nil
 }

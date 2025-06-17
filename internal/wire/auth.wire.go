@@ -46,6 +46,7 @@ func InitModuleFriendShip() (*controller.FriendShipController, error) {
 		reporitory.NewProfileRepository,
 		reporitory.NewConversationRepository,
 		reporitory.NewParticiapntRepository,
+		reporitory.NewBlockRepository,
 		service.NewFriendShipService,
 		controller.NewFriendShipController,
 	)
@@ -55,6 +56,7 @@ func InitModuleFriendShip() (*controller.FriendShipController, error) {
 func InitModuleBlock() (*controller.BlockController, error) {
 	wire.Build(
 		reporitory.NewBlockRepository,
+		reporitory.NewFriendShipRepository,
 		service.NewBlockService,
 		controller.NewBlockController,
 	)

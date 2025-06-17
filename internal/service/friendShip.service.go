@@ -5,6 +5,7 @@ import (
 	"chapapp-backend-api/internal/entity"
 	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/reporitory"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,6 +27,7 @@ type friendShipService struct {
 	profileRepo      reporitory.IProfileRepository
 	conversationRepo reporitory.IConversationRepository
 	participantRepo  reporitory.IParticipantRepository
+	blockRepo        reporitory.IBlockRepository
 }
 
 // Delete implements IFriendShipService.
@@ -68,11 +70,37 @@ func (s *friendShipService) Delete(data dto.DeleteFriendShipInputDTO) (dto.Delet
 
 // GetListReceiveFriendShips implements IFriendShipService.
 func (s *friendShipService) GetListReceiveFriendShips(id string) (dto.GetFriendShipOutputDTO, error) {
+	// Tìm thông tin người dùng
 	account, err := s.accountRepo.GetUserByAccountId(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "account not found")
 	}
 
+	// Convert id sang uint
+	var myID uint
+	fmt.Sscanf(id, "%d", &myID)
+
+	// Lấy danh sách người đã block mình
+	blockedList, err := s.blockRepo.GetListBlocked(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+	// Lấy danh sách người mình đã block
+	blockerList, err := s.blockRepo.GetListBlocker(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+
+	// Tập hợp các ID cần loại ra
+	blockedIDs := make(map[uint]bool)
+	for _, b := range blockedList {
+		blockedIDs[b.BlockerID] = true
+	}
+	for _, b := range blockerList {
+		blockedIDs[b.BlockedID] = true
+	}
+
+	// Lấy danh sách sender (gửi lời mời)
 	senderAccounts, err := s.friendShipRepo.FindAllReceivedFriendRequests(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, err
@@ -80,6 +108,10 @@ func (s *friendShipService) GetListReceiveFriendShips(id string) (dto.GetFriendS
 
 	var receivers []dto.Receiver
 	for _, sender := range senderAccounts {
+		if blockedIDs[sender.ID] {
+			continue
+		}
+
 		receiver := dto.Receiver{
 			ID:       sender.ID,
 			Username: sender.Username,
@@ -113,22 +145,50 @@ func (s *friendShipService) GetListFriendShipsOfAccount(id string) (dto.GetFrien
 		return dto.GetFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "account not found")
 	}
 
+	// Convert id sang uint
+	var myID uint
+	fmt.Sscanf(id, "%d", &myID)
+
+	// Lấy danh sách người đã block mình
+	blockedList, err := s.blockRepo.GetListBlocked(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+	// Lấy danh sách người mình đã block
+	blockerList, err := s.blockRepo.GetListBlocker(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+
+	// Tổng hợp ID cần loại bỏ
+	blockedIDs := make(map[uint]bool)
+	for _, b := range blockedList {
+		blockedIDs[b.BlockerID] = true
+	}
+	for _, b := range blockerList {
+		blockedIDs[b.BlockedID] = true
+	}
+
 	// Tìm bạn bè
 	friendAccounts, err := s.friendShipRepo.FindAllFriendOfAccount(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, err
 	}
 
-	// tim cai conversation tương ứng
+	// Tạo danh sách receivers (chỉ bạn bè không bị block hoặc block mình)
 	var receivers []dto.Receiver
 	for _, acc := range friendAccounts {
+		if blockedIDs[acc.ID] {
+			continue
+		}
+
 		conversation, _ := s.conversationRepo.FindConversationBetweenTwo(account.ID, acc.ID)
 		receiver := dto.Receiver{
-			ID:       acc.ID,
-			Username: acc.Username,
-			Email:    acc.Email,
-			ImageURL: "",
-			Status:   "ACCEPTED",
+			ID:             acc.ID,
+			Username:       acc.Username,
+			Email:          acc.Email,
+			ImageURL:       "",
+			Status:         "ACCEPTED",
 			ConversationID: conversation.ID,
 		}
 		if acc.Profile != nil {
@@ -151,24 +211,57 @@ func (s *friendShipService) GetListFriendShipsOfAccount(id string) (dto.GetFrien
 
 // GetListSendFriendShips implements IFriendShipService.
 func (f *friendShipService) GetListSendFriendShips(id string) (dto.GetFriendShipOutputDTO, error) {
+	// Tìm thông tin tài khoản
 	account, err := f.accountRepo.GetUserByAccountId(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "Not found account")
 	}
+
+	// Convert id sang uint
+	var myID uint
+	fmt.Sscanf(id, "%d", &myID)
+
+	// Lấy danh sách block (2 chiều)
+	blockedList, err := f.blockRepo.GetListBlocked(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+	blockerList, err := f.blockRepo.GetListBlocker(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+
+	// Tổng hợp các ID bị block
+	blockedIDs := make(map[uint]bool)
+	for _, b := range blockedList {
+		blockedIDs[b.BlockerID] = true
+	}
+	for _, b := range blockerList {
+		blockedIDs[b.BlockedID] = true
+	}
+
+	// Lấy danh sách yêu cầu đã gửi
 	list, err := f.friendShipRepo.FindAllSendFriendShips(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to get list send friendship")
 	}
+
 	var listReceiver []dto.Receiver
-	for i := range list {
+	for _, fs := range list {
+		// Nếu người nhận nằm trong danh sách bị block thì bỏ qua
+		if blockedIDs[fs.ReceiverID] {
+			continue
+		}
+
 		listReceiver = append(listReceiver, dto.Receiver{
-			ID:       list[i].ReceiverID,
-			Username: list[i].Receiver.Username,
-			Email:    list[i].Receiver.Email,
-			ImageURL: list[i].Receiver.Profile.AvatarURL,
-			Status:   list[i].Status,
+			ID:       fs.ReceiverID,
+			Username: fs.Receiver.Username,
+			Email:    fs.Receiver.Email,
+			ImageURL: fs.Receiver.Profile.AvatarURL,
+			Status:   fs.Status,
 		})
 	}
+
 	var outputDTO = dto.GetFriendShipOutputDTO{
 		Me: dto.Sender{
 			ID:       account.ID,
@@ -335,6 +428,6 @@ func (f *friendShipService) Create(data dto.CreateFriendShipInputDTO) (dto.Creat
 	}, nil
 }
 
-func NewFriendShipService(friendShipRepo reporitory.IFriendShipRepository, accountRepo reporitory.IAccountRepository, profileRepo reporitory.IProfileRepository, participantRepo reporitory.IParticipantRepository, conversationRepo reporitory.IConversationRepository) IFriendShipService {
-	return &friendShipService{friendShipRepo: friendShipRepo, accountRepo: accountRepo, profileRepo: profileRepo, participantRepo: participantRepo, conversationRepo: conversationRepo}
+func NewFriendShipService(friendShipRepo reporitory.IFriendShipRepository, accountRepo reporitory.IAccountRepository, profileRepo reporitory.IProfileRepository, participantRepo reporitory.IParticipantRepository, conversationRepo reporitory.IConversationRepository, blockRepo reporitory.IBlockRepository) IFriendShipService {
+	return &friendShipService{friendShipRepo: friendShipRepo, accountRepo: accountRepo, profileRepo: profileRepo, participantRepo: participantRepo, conversationRepo: conversationRepo, blockRepo: blockRepo}
 }

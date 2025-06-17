@@ -19,7 +19,8 @@ type IBlockService interface {
 }
 
 type blockService struct {
-	blockRepo reporitory.IBlockRepository
+	blockRepo      reporitory.IBlockRepository
+	friendShipRepo reporitory.IFriendShipRepository
 }
 
 // GetList implements IBlockService.
@@ -83,7 +84,6 @@ func (b *blockService) GetList(data string) (dto.GetBlockListOutputDTO, error) {
 	return outputDTO, nil
 }
 
-
 // Delete implements IBlockService.
 func (b *blockService) Delete(data dto.DeleteBlockInputDTO) (dto.DeleteBlockOutputDTO, error) {
 	// kiểm tra coi tụi nó có bị block thật không, không có thì return khoong ton tai
@@ -117,35 +117,52 @@ func (b *blockService) Delete(data dto.DeleteBlockInputDTO) (dto.DeleteBlockOutp
 
 // Create implements IBlockService.
 func (b *blockService) Create(data dto.CreateBlockInputDTO) (dto.CreateBlockOutputDTO, error) {
-	// kiem tra coi 2 thang do block nhau chua
+	// Kiểm tra đã block nhau chưa
 	checkedFlag, _ := b.IsBlocked(data.BlockerId, data.BlockedId)
-	if checkedFlag == true {
+	if checkedFlag {
 		return dto.CreateBlockOutputDTO{}, exception.NewCustomError(http.StatusConflict, "Users are already blocked")
-	} else {
-		// Convert string IDs to uint
-		blockerID, err := strconv.ParseUint(data.BlockerId, 10, 64)
-		if err != nil {
-			return dto.CreateBlockOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid BlockerID")
-		}
-		blockedID, err := strconv.ParseUint(data.BlockedId, 10, 64)
-		if err != nil {
-			return dto.CreateBlockOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid BlockedID")
-		}
-		newBlock := entity.Block{
-			BlockerID: uint(blockerID),
-			BlockedID: uint(blockedID),
-		}
-
-		blockCreated, err := b.blockRepo.CreateBlock(newBlock)
-		if err != nil {
-			return dto.CreateBlockOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to create block")
-		}
-		return dto.CreateBlockOutputDTO{
-			BlockerId: strconv.FormatUint(uint64(blockCreated.BlockerID), 10),
-			BlockedId: strconv.FormatUint(uint64(blockCreated.BlockedID), 10),
-			IsSuccess: true,
-		}, nil
 	}
+
+	// Convert string -> uint
+	blockerID, err := strconv.ParseUint(data.BlockerId, 10, 64)
+	if err != nil {
+		return dto.CreateBlockOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid BlockerID")
+	}
+	blockedID, err := strconv.ParseUint(data.BlockedId, 10, 64)
+	if err != nil {
+		return dto.CreateBlockOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid BlockedID")
+	}
+
+	newBlock := entity.Block{
+		BlockerID: uint(blockerID),
+		BlockedID: uint(blockedID),
+	}
+
+	// Kiểm tra quan hệ bạn bè (2 chiều)
+	friendEntity, err := b.friendShipRepo.FindBySenderAndReceiver(uint(blockerID), uint(blockedID))
+	if err != nil {
+		friendEntity, err = b.friendShipRepo.FindBySenderAndReceiver(uint(blockedID), uint(blockerID))
+	}
+
+	// Nếu tìm thấy, thì xoá mối quan hệ bạn bè
+	if err == nil {
+		_,err = b.friendShipRepo.DeleteByID(friendEntity.ID)
+		if err != nil {
+			return dto.CreateBlockOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to delete friendship")
+		}
+	}
+
+	// Tạo bản ghi block mới
+	blockCreated, err := b.blockRepo.CreateBlock(newBlock)
+	if err != nil {
+		return dto.CreateBlockOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to create block")
+	}
+
+	return dto.CreateBlockOutputDTO{
+		BlockerId: strconv.FormatUint(uint64(blockCreated.BlockerID), 10),
+		BlockedId: strconv.FormatUint(uint64(blockCreated.BlockedID), 10),
+		IsSuccess: true,
+	}, nil
 }
 
 // IsBlocked implements IBlockService.
@@ -161,8 +178,9 @@ func (b *blockService) IsBlocked(id1 string, id2 string) (bool, error) {
 	return b.blockRepo.IsBlocked(uint(blockerID), uint(blockedID))
 }
 
-func NewBlockService(blockRepo reporitory.IBlockRepository) IBlockService {
+func NewBlockService(blockRepo reporitory.IBlockRepository, friendShipRepo reporitory.IFriendShipRepository) IBlockService {
 	return &blockService{
-		blockRepo: blockRepo,
+		blockRepo:      blockRepo,
+		friendShipRepo: friendShipRepo,
 	}
 }
