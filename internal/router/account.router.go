@@ -16,7 +16,7 @@ func (accountRouter *AccountRouter) InitAccountRouter(router *gin.RouterGroup) {
 	{
 		authPublicRouter.GET("", authController.GetList)
 		authPublicRouter.GET("/detail/:id", authController.GetDetail)
-		authPublicRouter.GET("/random/:id", authController.GetRandomList)
+		authPublicRouter.GET("/random", authController.GetRandomList)
 	}
 	{
 

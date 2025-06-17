@@ -2,12 +2,13 @@ package reporitory
 
 import (
 	"chapapp-backend-api/global"
+	"chapapp-backend-api/internal/dto"
 	"chapapp-backend-api/internal/entity"
 )
 
 type IAccountRepository interface {
-	GetList() ([]entity.Account, error)
-	GetRandomFive() ([]entity.Account, error)
+	GetList(data dto.GetListAccountInputDTO) ([]entity.Account, error)
+	GetRandomFive(id string) ([]entity.Account, error)
 	GetUserByEmail(email string) (entity.Account, error)
 	GetUserByUsername(username string) (entity.Account, error)
 	GetUserByAccountId(id string) (entity.Account, error)
@@ -19,9 +20,9 @@ type accountRepository struct {
 }
 
 // GetRandomFive implements IAccountRepository.
-func (a *accountRepository) GetRandomFive() ([]entity.Account, error) {
+func (a *accountRepository) GetRandomFive(id string) ([]entity.Account, error) {
 	var accounts []entity.Account
-	err := global.Mdb.Preload("Profile").Limit(5).Order("RAND()").Find(&accounts).Error
+	err := global.Mdb.Preload("Profile").Where("id <> ?", id).Limit(5).Order("RAND()").Find(&accounts).Error
 	if err != nil {
 		return nil, err
 	}
@@ -29,9 +30,10 @@ func (a *accountRepository) GetRandomFive() ([]entity.Account, error) {
 }
 
 // GetList implements IAccountRepository.
-func (a *accountRepository) GetList() ([]entity.Account, error) {
+func (a *accountRepository) GetList(data dto.GetListAccountInputDTO) ([]entity.Account, error) {
 	var accounts []entity.Account
-	err := global.Mdb.Preload("Profile").Find(&accounts).Error
+	err := global.Mdb.Preload("Profile").Where("id <> ?", data.Me).Find(&accounts).Error
+
 	if err != nil {
 		return nil, err
 	}

@@ -1,5 +1,18 @@
 package dto
 
+type (
+	GetRamdonAccountInputDTO struct {
+		Me string `form:"me"`
+		GetBlock bool `form:"getBlock"`
+	}
+)
+
+type (
+	GetListAccountInputDTO struct {
+		Me string `form:"me"`
+		GetBlock bool `form:"getBlock"`
+	}
+)
 
 type (
 	GetAccountDetailOutputDTO struct {
