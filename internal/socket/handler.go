@@ -69,6 +69,7 @@ func RegisterHandlers() {
 			content := data["content"].(string)
 			conversationID := uint(data["conversationId"].(float64))
 			senderId := uint(data["senderId"].(float64))
+			originFilename := data["originFilename"].(string)
 			messageType := data["type"].(string)
 
 			room := fmt.Sprintf("conversation_%d", conversationID)
@@ -78,6 +79,7 @@ func RegisterHandlers() {
 			_, err := messageService.Create(dto.CreateMessageInputDTO{
 				Content:        content,
 				ConversationId: fmt.Sprintf("%d", conversationID),
+				OriginFilename: &originFilename,
 				SenderId:       fmt.Sprintf("%d", senderId)})
 			if err != nil {
 				fmt.Println(err)
@@ -88,6 +90,7 @@ func RegisterHandlers() {
 				"senderId":       senderId, // giả lập user
 				"conversationId": conversationID,
 				"content":        content,
+				"originFilename": originFilename,
 				"type":           messageType,
 			})
 			fmt.Println("📤 Emitted to room:", room)
