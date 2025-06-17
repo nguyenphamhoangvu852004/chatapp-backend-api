@@ -70,6 +70,7 @@ func RegisterHandlers() {
 			conversationID := uint(data["conversationId"].(float64))
 			senderId := uint(data["senderId"].(float64))
 			originFilename := data["originFilename"].(string)
+			size := data["size"].(string)
 			messageType := data["type"].(string)
 
 			room := fmt.Sprintf("conversation_%d", conversationID)
@@ -80,7 +81,10 @@ func RegisterHandlers() {
 				Content:        content,
 				ConversationId: fmt.Sprintf("%d", conversationID),
 				OriginFilename: &originFilename,
-				SenderId:       fmt.Sprintf("%d", senderId)})
+				SenderId:       fmt.Sprintf("%d", senderId),
+				Size:           &size,
+			})
+
 			if err != nil {
 				fmt.Println(err)
 				panic(err)
@@ -91,6 +95,7 @@ func RegisterHandlers() {
 				"conversationId": conversationID,
 				"content":        content,
 				"originFilename": originFilename,
+				"size":           size,
 				"type":           messageType,
 			})
 			fmt.Println("📤 Emitted to room:", room)

@@ -37,6 +37,7 @@ func (s *messageService) Create(data dto.CreateMessageInputDTO) (dto.CreateMessa
 		ConversationID: conversationID,
 		Content:        data.Content,
 		OriginFilename: *data.OriginFilename,
+		Size:           *data.Size,
 		MessageType:    "text",
 	}
 
@@ -49,6 +50,7 @@ func (s *messageService) Create(data dto.CreateMessageInputDTO) (dto.CreateMessa
 		MessageId:      strconv.FormatUint(uint64(createdMessage.ID), 10),
 		Content:        createdMessage.Content,
 		OriginFilename: &createdMessage.OriginFilename,
+		Size:           &createdMessage.Size,
 	}, nil
 
 }
@@ -67,6 +69,7 @@ func (s *messageService) GetList(data dto.GetListMessageInputDTO) (dto.GetListMe
 			Content:        m.Content,
 			Type:           m.MessageType,
 			OriginFilename: &m.OriginFilename,
+			Size:           &m.Size,
 			CreatedAt:      m.CreatedAt.Format(time.RFC3339),
 		})
 	}

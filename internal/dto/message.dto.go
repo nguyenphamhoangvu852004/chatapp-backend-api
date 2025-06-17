@@ -6,11 +6,13 @@ type (
 		ConversationId string  `json:"conversationId"`
 		Content        string  `json:"content"`
 		OriginFilename *string `json:"originFilename"`
+		Size           *string `json:"size"`
 	}
 	CreateMessageOutputDTO struct {
 		MessageId      string  `json:"messageId"`
 		Content        string  `json:"content"`
 		OriginFilename *string `json:"originFilename"`
+		Size           *string `json:"size"`
 	}
 )
 
@@ -29,6 +31,7 @@ type (
 		Content        string  `json:"content"`
 		Type           string  `json:"type"`
 		OriginFilename *string `json:"originFilename"`
+		Size           *string `json:"size"`
 		CreatedAt      string  `json:"createdAt"`
 	}
 )
