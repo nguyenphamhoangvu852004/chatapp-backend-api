@@ -62,11 +62,12 @@ func (s *messageService) GetList(data dto.GetListMessageInputDTO) (dto.GetListMe
 	var result []dto.Message
 	for _, m := range messages {
 		result = append(result, dto.Message{
-			ID:        fmt.Sprintf("%d", m.ID),
-			SenderId:  fmt.Sprintf("%d", m.SenderID),
-			Content:   m.Content,
-			Type:      m.MessageType,
-			CreatedAt: m.CreatedAt.Format(time.RFC3339),
+			ID:             fmt.Sprintf("%d", m.ID),
+			SenderId:       fmt.Sprintf("%d", m.SenderID),
+			Content:        m.Content,
+			Type:           m.MessageType,
+			OriginFilename: &m.OriginFilename,
+			CreatedAt:      m.CreatedAt.Format(time.RFC3339),
 		})
 	}
 
