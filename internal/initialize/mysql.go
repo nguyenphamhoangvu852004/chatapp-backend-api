@@ -3,6 +3,8 @@ package initialize
 import (
 	"chapapp-backend-api/global"
 	"chapapp-backend-api/internal/entity"
+	"chapapp-backend-api/internal/utils"
+	"errors"
 	"fmt"
 	"time"
 
@@ -35,7 +37,6 @@ func InitMysql() {
 	global.Mdb = global.Mdb.Debug()
 	// fromMysqlToGorm()
 }
-
 
 func SetPool() {
 	m := global.Config.Mysql
@@ -78,10 +79,78 @@ func migrateTable() {
 		&entity.Message{},
 		&entity.MessageRead{},
 		&entity.Block{},
+		&entity.Role{},
 	)
 	if err != nil {
 		global.Logger.Error(err.Error())
 	} else {
 		global.Logger.Info("Migrate Table Success")
 	}
+
+	initSystemRoles()
+	initSystemAdminAccount()
+}
+
+func initSystemRoles() {
+	var count int64
+	global.Mdb.Model(&entity.Role{}).Count(&count)
+	if count == 0 {
+		roles := []entity.Role{
+			{Rolename: "ADMIN"},
+			{Rolename: "USER"},
+		}
+		if err := global.Mdb.Create(&roles).Error; err != nil {
+			return
+		}
+		global.Logger.Info("Seeded roles: ADMIN, USER")
+	} else {
+		global.Logger.Info("Roles already seeded")
+	}
+}
+
+func initSystemAdminAccount() {
+	var g = global.Config.Admin
+	var adminAccount entity.Account
+	res := global.Mdb.Model(&entity.Account{}).Where("username = ?", "admin").First(&adminAccount)
+	if res.Error == nil {
+		global.Logger.Info("Admin account already exists")
+		return
+	}
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		hashedPassword, err := utils.HashPassword(g.Password)
+		if err != nil {
+			global.Logger.Error("Failed to hash password for admin")
+			return
+		}
+
+		var adminRole entity.Role
+		if err := global.Mdb.Where("rolename = ?", "ADMIN").First(&adminRole).Error; err != nil {
+			global.Logger.Error("Admin role not found")
+			return
+		}
+
+		account := entity.Account{
+			Email:       g.Email,
+			Username:    g.Username,
+			PhoneNumber: g.PhoneNumber,
+			Password:    hashedPassword,
+			Roles:       []entity.Role{adminRole}, // phải gán role thật, không tạo mới
+			Profile: &entity.Profile{
+				FullName:  "Admin",
+				Bio:       "",
+				AvatarURL: "",
+				CoverURL:  "",
+			},
+		}
+
+		if err := global.Mdb.Create(&account).Error; err != nil {
+			global.Logger.Error("Failed to create admin account: " + err.Error())
+			return
+		}
+
+		global.Logger.Info("✅ Seeded admin account: admin")
+	} else {
+		global.Logger.Error("Error when checking admin account: " + res.Error.Error())
+	}
+
 }

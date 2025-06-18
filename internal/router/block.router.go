@@ -1,6 +1,7 @@
 package router
 
 import (
+	"chapapp-backend-api/internal/middleware"
 	"chapapp-backend-api/internal/wire"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ type BlockRouter struct {
 func (blockRouter *BlockRouter) InitBlockRouter(router *gin.RouterGroup) {
 	//public router
 	blockController, _ := wire.InitModuleBlock()
-	blockPublicRouter := router.Group("/blocks")
+	blockPublicRouter := router.Group("/blocks", middleware.AuthMiddleware())
 	{
 		blockPublicRouter.POST("/", blockController.Create)
 		blockPublicRouter.DELETE("/", blockController.Delete)

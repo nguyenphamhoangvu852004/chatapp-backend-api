@@ -8,6 +8,13 @@ type Config struct {
 	Jwt        Jwt        `mapstructure:"jwt"`
 	Cors       Cors       `mapstructure:"cors"`
 	Cloudinary Cloudinary `mapstructure:"cloudinary"`
+	Admin      Admin      `mapstructure:"admin"`
+}
+type Admin struct {
+	Email       string `mapstructure:"email"`
+	Password    string `mapstructure:"password"`
+	PhoneNumber string `mapstructure:"phoneNumber"`
+	Username    string `mapstructure:"username"`
 }
 type Cloudinary struct {
 	CloudName string `mapstructure:"cloud_name"`

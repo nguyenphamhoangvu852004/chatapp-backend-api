@@ -9,6 +9,7 @@ type Account struct {
 	ProfileID   *uint    `json:"-"`
 	IsBanned    bool     `gorm:"type:bool;default:false;not null"`
 	Profile     *Profile `gorm:"foreignKey:ProfileID;constraint:OnDelete:SET NULL;"`
+	Roles       []Role   `gorm:"many2many:account_roles;constraint:OnDelete:CASCADE;"`
 }
 
 func (Account) TableName() string {
