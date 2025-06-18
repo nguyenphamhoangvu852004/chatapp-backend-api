@@ -71,3 +71,11 @@ func InitModuleConversation() (*controller.ConversationController, error) {
 	conversationController := controller.NewConversationController(iConversationSerivce)
 	return conversationController, nil
 }
+
+func InitModuleBan() (*controller.BanController, error) {
+	iBanRepository := reporitory.NewBanRepository()
+	iAccountRepository := reporitory.NewAccountRepository()
+	iBanService := service.NewBanService(iBanRepository, iAccountRepository)
+	banController := controller.NewBanController(iBanService)
+	return banController, nil
+}

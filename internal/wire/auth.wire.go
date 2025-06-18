@@ -81,3 +81,13 @@ func InitModuleConversation() (*controller.ConversationController, error) {
 	)
 	return new(controller.ConversationController), nil
 }
+
+func InitModuleBan() (*controller.BanController, error) {
+	wire.Build(
+		reporitory.NewBanRepository,
+		reporitory.NewAccountRepository,
+		service.NewBanService,
+		controller.NewBanController,
+	)
+	return new(controller.BanController), nil
+}

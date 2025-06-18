@@ -8,6 +8,7 @@ type RouterGroup struct {
 	BlockRouter
 	MessageRouter
 	ConversationRouter
+	BanRouter
 }
 
 var RouterGroupApp = new(RouterGroup)
