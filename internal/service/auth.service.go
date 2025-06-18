@@ -71,9 +71,12 @@ func (dtoService *dtoService) Login(data dto.LoginInputDTO) (dto.LoginOutputDTO,
 		return dto.LoginOutputDTO{}, exception.NewCustomError(http.StatusUnauthorized, "Account is banned")
 	}
 
-	if account.Password != data.Password {
+	// so sanh mat khau tu client voi mat khau trong db
+
+	if !utils.CheckPassword(data.Password, account.Password) {
 		return dto.LoginOutputDTO{}, exception.NewCustomError(http.StatusUnauthorized, "Invalid password")
 	}
+
 	var roles []string = []string{}
 
 	var accToken, _ = utils.GenerateAccessToken(account.ID, account.Email, roles)
@@ -154,11 +157,16 @@ func (s *dtoService) Register(input dto.RegisterInputDTO) (dto.RegisterOutputDTO
 	if input.Password != input.ConfirmPassword {
 		return dto.RegisterOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Password and confirm password do not match")
 	}
+	// ma hoa mat khau
+	hashedPassword, err := utils.HashPassword(input.Password)
+	if err != nil {
+		return dto.RegisterOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to hash password")
+	}
 
 	// 3. Tạo entity account mới
 	newAccount := entity.Account{
 		Email:       input.Email,
-		Password:    input.Password, // TODO: mã hóa sau
+		Password:    hashedPassword,
 		Username:    input.Username,
 		PhoneNumber: input.PhoneNumber,
 		Profile: &entity.Profile{
