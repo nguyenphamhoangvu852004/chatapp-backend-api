@@ -20,6 +20,7 @@ type (
 		Username    string                    `json:"username"`
 		Email       string                    `json:"email"`
 		PhoneNumber string                    `json:"phoneNumber"`
+		IsBanned    bool                      `json:"isBanned"`
 		Profile     GetProfileDetailOutputDTO `json:"profile"`
 	}
 )

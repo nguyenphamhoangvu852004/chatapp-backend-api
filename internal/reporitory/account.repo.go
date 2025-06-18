@@ -14,9 +14,21 @@ type IAccountRepository interface {
 	GetUserByAccountId(id string) (entity.Account, error)
 	Create(account entity.Account) (entity.Account, error)
 	Update(account entity.Account) (entity.Account, error)
+	GetListBan(data dto.GetListBanInputDTO) ([]entity.Account, error)
+
 }
 
 type accountRepository struct {
+}
+
+// GetListBan implements IAccountRepository.
+func (a *accountRepository) GetListBan(data dto.GetListBanInputDTO) ([]entity.Account, error) {
+	var accounts []entity.Account
+	err := global.Mdb.Where("is_banned = ?", 1).Limit(data.Limit).Offset(data.Limit * (data.Page - 1)).Preload("Profile").Find(&accounts).Error
+	if err != nil {
+		return nil, err
+	}
+	return accounts, nil
 }
 
 // GetRandomFive implements IAccountRepository.

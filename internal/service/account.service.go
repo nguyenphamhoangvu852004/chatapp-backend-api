@@ -61,6 +61,7 @@ func (a *accountService) GetRandomList(data dto.GetRamdonAccountInputDTO) ([]dto
 			Username:    acc.Username,
 			Email:       acc.Email,
 			PhoneNumber: acc.PhoneNumber,
+			IsBanned:    acc.IsBanned,
 			Profile: dto.GetProfileDetailOutputDTO{
 				Id:        fmt.Sprintf("%d", acc.Profile.ID),
 				FullName:  acc.Profile.FullName,
@@ -73,7 +74,6 @@ func (a *accountService) GetRandomList(data dto.GetRamdonAccountInputDTO) ([]dto
 
 	return listOutDTO, nil
 }
-
 
 // GetList implements IAccountService.
 func (a *accountService) GetList(data dto.GetListAccountInputDTO) ([]dto.GetAccountDetailOutputDTO, error) {
@@ -119,6 +119,7 @@ func (a *accountService) GetList(data dto.GetListAccountInputDTO) ([]dto.GetAcco
 			Username:    entity.Username,
 			Email:       entity.Email,
 			PhoneNumber: entity.PhoneNumber,
+			IsBanned:    entity.IsBanned,
 			Profile: dto.GetProfileDetailOutputDTO{
 				Id:        fmt.Sprintf("%d", entity.Profile.ID),
 				FullName:  entity.Profile.FullName,
@@ -132,7 +133,6 @@ func (a *accountService) GetList(data dto.GetListAccountInputDTO) ([]dto.GetAcco
 	return outputDTO, nil
 }
 
-
 // GetDetail implements IAccountService.
 func (a *accountService) GetDetail(id string) (dto.GetAccountDetailOutputDTO, error) {
 	res, err := a.accountRepo.GetUserByAccountId(id)
@@ -144,6 +144,7 @@ func (a *accountService) GetDetail(id string) (dto.GetAccountDetailOutputDTO, er
 		Username:    res.Username,
 		Email:       res.Email,
 		PhoneNumber: res.PhoneNumber,
+		IsBanned:    res.IsBanned,
 		Profile: dto.GetProfileDetailOutputDTO{
 			Id:        fmt.Sprintf("%d", res.Profile.ID),
 			FullName:  res.Profile.FullName,
