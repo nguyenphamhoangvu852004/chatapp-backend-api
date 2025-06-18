@@ -1,0 +1,42 @@
+server:
+  mode: "dev"
+  port: 8081
+  socketPort: 8082
+cors:
+  url: "http://localhost:5173"
+
+mysql:
+  host: "localhost"
+  port: 3306
+  username: "root"
+  password: "nguyenvu"
+  dbname: "chatapp"
+  maxIdleConns: 3
+  maxOpenConns: 5
+  connMaxLifeTime: 10
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  database: 0
+
+log:
+  logLevel: "debug"
+  fileLogName: "./storage/logs/server.log"
+  maxSize:    500
+  maxBackups: 3
+  maxAge:     7
+  compress:   true
+
+jwt:
+  accessSecret: "myaccessecrettoken2025"
+  accessSecretExpiriedTime: 3600
+  refreshSecret: "myrefreshtokensecret2025"
+  refreshSecretExpiriedTime: 86400
+
+cloudinary:
+  cloud_name: "dmsnw2qpd"
+  api_key: "214187186256291"
+  api_secret: "13ew1sxffolXvVYkaGleJcAd4AY"
+
