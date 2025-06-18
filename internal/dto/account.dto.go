@@ -1,9 +1,25 @@
 package dto
 
-type GetAccountDetailOutputDTO struct {
-	Id          string                            `json:"id"`
-	Username    string                            `json:"username"`
-	Email       string                            `json:"email"`
-	PhoneNumber string                            `json:"phoneNumber"`
-	Profile     GetProfileDetailOutputDTO `json:"profile"`
-}
+type (
+	GetRamdonAccountInputDTO struct {
+		Me string `form:"me"`
+		GetBlock bool `form:"getBlock"`
+	}
+)
+
+type (
+	GetListAccountInputDTO struct {
+		Me string `form:"me"`
+		GetBlock bool `form:"getBlock"`
+	}
+)
+
+type (
+	GetAccountDetailOutputDTO struct {
+		Id          string                    `json:"id"`
+		Username    string                    `json:"username"`
+		Email       string                    `json:"email"`
+		PhoneNumber string                    `json:"phoneNumber"`
+		Profile     GetProfileDetailOutputDTO `json:"profile"`
+	}
+)

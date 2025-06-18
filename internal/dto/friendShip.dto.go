@@ -41,10 +41,9 @@ type FriendDTO struct {
 }
 
 type GetListFriendShipOutputDTO struct {
-	Me   uint              `json:"me"`
+	Me   uint                `json:"me"`
 	Data []FriendShipItemDTO `json:"data"` // danh sách mối quan hệ
 }
-
 
 type GetFriendShipOutputDTO struct {
 	Me     Sender     `json:"me"`
@@ -58,11 +57,12 @@ type Sender struct {
 }
 
 type Receiver struct {
-	ID       uint   `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	ImageURL string `json:"imageUrl"`
-	Status   string `json:"status"`
+	ID             uint   `json:"id"`
+	Username       string `json:"username"`
+	Email          string `json:"email"`
+	ImageURL       string `json:"imageUrl"`
+	Status         string `json:"status"`
+	ConversationID uint   `json:"conversationId"`
 }
 
 type DeleteFriendShipInputDTO struct {

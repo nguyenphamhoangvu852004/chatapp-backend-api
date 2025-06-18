@@ -5,6 +5,7 @@ import (
 	"chapapp-backend-api/internal/entity"
 	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/reporitory"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,9 +22,12 @@ type IFriendShipService interface {
 }
 
 type friendShipService struct {
-	friendShipRepo reporitory.IFriendShipRepository
-	accountRepo    reporitory.IAccountRepository
-	profileRepo    reporitory.IProfileRepository
+	friendShipRepo   reporitory.IFriendShipRepository
+	accountRepo      reporitory.IAccountRepository
+	profileRepo      reporitory.IProfileRepository
+	conversationRepo reporitory.IConversationRepository
+	participantRepo  reporitory.IParticipantRepository
+	blockRepo        reporitory.IBlockRepository
 }
 
 // Delete implements IFriendShipService.
@@ -49,10 +53,12 @@ func (s *friendShipService) Delete(data dto.DeleteFriendShipInputDTO) (dto.Delet
 	}
 
 	// 3. Xóa quan hệ bạn bè
-	friendShipDeleted, err := s.friendShipRepo.DeleteByID(friendShip.ID); 
+	friendShipDeleted, err := s.friendShipRepo.DeleteByID(friendShip.ID)
 	if err != nil {
 		return dto.DeleteFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "failed to delete friendship")
 	}
+
+	// Xoá hết trong cái bảng conversation luôn
 
 	// 4. Trả response
 	return dto.DeleteFriendShipOutputDTO{
@@ -62,14 +68,39 @@ func (s *friendShipService) Delete(data dto.DeleteFriendShipInputDTO) (dto.Delet
 	}, nil
 }
 
-
 // GetListReceiveFriendShips implements IFriendShipService.
 func (s *friendShipService) GetListReceiveFriendShips(id string) (dto.GetFriendShipOutputDTO, error) {
+	// Tìm thông tin người dùng
 	account, err := s.accountRepo.GetUserByAccountId(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "account not found")
 	}
 
+	// Convert id sang uint
+	var myID uint
+	fmt.Sscanf(id, "%d", &myID)
+
+	// Lấy danh sách người đã block mình
+	blockedList, err := s.blockRepo.GetListBlocked(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+	// Lấy danh sách người mình đã block
+	blockerList, err := s.blockRepo.GetListBlocker(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+
+	// Tập hợp các ID cần loại ra
+	blockedIDs := make(map[uint]bool)
+	for _, b := range blockedList {
+		blockedIDs[b.BlockerID] = true
+	}
+	for _, b := range blockerList {
+		blockedIDs[b.BlockedID] = true
+	}
+
+	// Lấy danh sách sender (gửi lời mời)
 	senderAccounts, err := s.friendShipRepo.FindAllReceivedFriendRequests(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, err
@@ -77,6 +108,10 @@ func (s *friendShipService) GetListReceiveFriendShips(id string) (dto.GetFriendS
 
 	var receivers []dto.Receiver
 	for _, sender := range senderAccounts {
+		if blockedIDs[sender.ID] {
+			continue
+		}
+
 		receiver := dto.Receiver{
 			ID:       sender.ID,
 			Username: sender.Username,
@@ -110,20 +145,51 @@ func (s *friendShipService) GetListFriendShipsOfAccount(id string) (dto.GetFrien
 		return dto.GetFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "account not found")
 	}
 
+	// Convert id sang uint
+	var myID uint
+	fmt.Sscanf(id, "%d", &myID)
+
+	// Lấy danh sách người đã block mình
+	blockedList, err := s.blockRepo.GetListBlocked(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+	// Lấy danh sách người mình đã block
+	blockerList, err := s.blockRepo.GetListBlocker(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+
+	// Tổng hợp ID cần loại bỏ
+	blockedIDs := make(map[uint]bool)
+	for _, b := range blockedList {
+		blockedIDs[b.BlockerID] = true
+	}
+	for _, b := range blockerList {
+		blockedIDs[b.BlockedID] = true
+	}
+
 	// Tìm bạn bè
 	friendAccounts, err := s.friendShipRepo.FindAllFriendOfAccount(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, err
 	}
 
+	// Tạo danh sách receivers (chỉ bạn bè không bị block hoặc block mình)
 	var receivers []dto.Receiver
 	for _, acc := range friendAccounts {
+		if blockedIDs[acc.ID] {
+			continue
+		}
+
+		conversation, _ := s.conversationRepo.FindConversationBetweenTwo(account.ID, acc.ID)
 		receiver := dto.Receiver{
-			ID:       acc.ID,
-			Username: acc.Username,
-			Email:    acc.Email,
-			ImageURL: "",
-			Status:   "ACCEPTED",
+			ID:             acc.ID,
+			Username:       acc.Username,
+			Email:          acc.Email,
+			ImageURL:       "",
+			Status:         "ACCEPTED",
+			ConversationID: conversation.ID,
 		}
 		if acc.Profile != nil {
 			receiver.ImageURL = acc.Profile.AvatarURL
@@ -145,24 +211,57 @@ func (s *friendShipService) GetListFriendShipsOfAccount(id string) (dto.GetFrien
 
 // GetListSendFriendShips implements IFriendShipService.
 func (f *friendShipService) GetListSendFriendShips(id string) (dto.GetFriendShipOutputDTO, error) {
+	// Tìm thông tin tài khoản
 	account, err := f.accountRepo.GetUserByAccountId(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "Not found account")
 	}
+
+	// Convert id sang uint
+	var myID uint
+	fmt.Sscanf(id, "%d", &myID)
+
+	// Lấy danh sách block (2 chiều)
+	blockedList, err := f.blockRepo.GetListBlocked(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+	blockerList, err := f.blockRepo.GetListBlocker(myID)
+	if err != nil {
+		return dto.GetFriendShipOutputDTO{}, err
+	}
+
+	// Tổng hợp các ID bị block
+	blockedIDs := make(map[uint]bool)
+	for _, b := range blockedList {
+		blockedIDs[b.BlockerID] = true
+	}
+	for _, b := range blockerList {
+		blockedIDs[b.BlockedID] = true
+	}
+
+	// Lấy danh sách yêu cầu đã gửi
 	list, err := f.friendShipRepo.FindAllSendFriendShips(id)
 	if err != nil {
 		return dto.GetFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to get list send friendship")
 	}
+
 	var listReceiver []dto.Receiver
-	for i := range list {
+	for _, fs := range list {
+		// Nếu người nhận nằm trong danh sách bị block thì bỏ qua
+		if blockedIDs[fs.ReceiverID] {
+			continue
+		}
+
 		listReceiver = append(listReceiver, dto.Receiver{
-			ID:       list[i].ReceiverID,
-			Username: list[i].Receiver.Username,
-			Email:    list[i].Receiver.Email,
-			ImageURL: list[i].Receiver.Profile.AvatarURL,
-			Status:   list[i].Status,
+			ID:       fs.ReceiverID,
+			Username: fs.Receiver.Username,
+			Email:    fs.Receiver.Email,
+			ImageURL: fs.Receiver.Profile.AvatarURL,
+			Status:   fs.Status,
 		})
 	}
+
 	var outputDTO = dto.GetFriendShipOutputDTO{
 		Me: dto.Sender{
 			ID:       account.ID,
@@ -245,6 +344,42 @@ func (f *friendShipService) Update(data dto.UpdateFriendShipInputDTO) (dto.Updat
 		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to update friendship")
 	}
 
+	// tao 1 row converation o day
+	var conversationEntity = entity.Conversation{
+		IsGroup: false,
+	}
+
+	conversationCreated, err := f.conversationRepo.Create(conversationEntity)
+	if err != nil {
+		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to create conversation")
+	}
+
+	// toa 1 row để 2 người chat ne
+	// 2 người sẽ giao tiếp qua cái conversationID hết á
+	receiverIDUint, err = strconv.ParseUint(data.ReceiverID, 10, 64)
+	if err != nil {
+		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid receiver ID")
+	}
+	var participantEntity1 = entity.Participant{
+		AccountID:      uint(receiverIDUint),
+		ConversationID: conversationCreated.ID,
+		Role:           "member",
+	}
+	_, err = f.participantRepo.Create(participantEntity1)
+	senderIDUint, err = strconv.ParseUint(data.SenderID, 10, 64)
+	if err != nil {
+		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Invalid sender ID")
+	}
+	var participantEntity2 = entity.Participant{
+		AccountID:      uint(senderIDUint),
+		ConversationID: conversationCreated.ID,
+		Role:           "member",
+	}
+	_, err = f.participantRepo.Create(participantEntity2)
+	if err != nil {
+		return dto.UpdateFriendShipOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to create participant")
+	}
+
 	return dto.UpdateFriendShipOutputDTO{
 		SenderID:   data.SenderID,
 		ReceiverID: data.ReceiverID,
@@ -293,6 +428,6 @@ func (f *friendShipService) Create(data dto.CreateFriendShipInputDTO) (dto.Creat
 	}, nil
 }
 
-func NewFriendShipService(friendShipRepo reporitory.IFriendShipRepository, accountRepo reporitory.IAccountRepository, profileRepo reporitory.IProfileRepository) IFriendShipService {
-	return &friendShipService{friendShipRepo: friendShipRepo, accountRepo: accountRepo, profileRepo: profileRepo}
+func NewFriendShipService(friendShipRepo reporitory.IFriendShipRepository, accountRepo reporitory.IAccountRepository, profileRepo reporitory.IProfileRepository, participantRepo reporitory.IParticipantRepository, conversationRepo reporitory.IConversationRepository, blockRepo reporitory.IBlockRepository) IFriendShipService {
+	return &friendShipService{friendShipRepo: friendShipRepo, accountRepo: accountRepo, profileRepo: profileRepo, participantRepo: participantRepo, conversationRepo: conversationRepo, blockRepo: blockRepo}
 }

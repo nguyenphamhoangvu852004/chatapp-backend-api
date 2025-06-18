@@ -1,6 +1,5 @@
 package entity
 
-
 type Message struct {
 	BaseEntity
 	SenderID       uint
@@ -8,6 +7,8 @@ type Message struct {
 	ConversationID uint
 	Conversation   Conversation `gorm:"constraint:OnDelete:CASCADE"`
 	MessageType    string       `gorm:"type:enum('text','image','video','file');default:'text'"`
+	OriginFilename string       `gorm:"type:varchar(255)"`
+	Size           string       `gorm:"type:varchar(255)"`
 	Content        string       `gorm:"type:text"`
 }
 

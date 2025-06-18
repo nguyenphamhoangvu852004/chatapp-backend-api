@@ -1,13 +1,11 @@
 package entity
 
-
 type Conversation struct {
 	BaseEntity
 	IsGroup     bool   `gorm:"default:false"`
 	Name        string `gorm:"type:varchar(255)"`
-	GroupAvatar string `gorm:"type:varchar(500)"`
-	CreatedByID *uint
-	CreatedBy   *Account `gorm:"foreignKey:CreatedByID;constraint:OnDelete:SET NULL"`
+	GroupAvatar string `gorm:"type:text"`
+	Participants []Participant `gorm:"foreignKey:ConversationID;constraint:OnDelete:CASCADE"`
 }
 
 func (Conversation) TableName() string {

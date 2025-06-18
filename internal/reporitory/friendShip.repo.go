@@ -64,6 +64,7 @@ func (r *friendShipRepository) FindAllFriendOfAccount(accountID string) ([]entit
 	accountIDUint := uint(parsedAccountID)
 
 	for _, fs := range friendShips {
+
 		if fs.SenderID == accountIDUint {
 			friends = append(friends, fs.Receiver)
 		} else {

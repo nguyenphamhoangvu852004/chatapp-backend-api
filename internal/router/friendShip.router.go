@@ -1,6 +1,7 @@
 package router
 
 import (
+	"chapapp-backend-api/internal/middleware"
 	"chapapp-backend-api/internal/wire"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ type FriendShipRouter struct {
 func (friendShipRouter *FriendShipRouter) InitFriendShipRouter(router *gin.RouterGroup) {
 	//public router
 	friendShipController, _ := wire.InitModuleFriendShip()
-	friendShipPublicRouter := router.Group("/friendShips")
+	friendShipPublicRouter := router.Group("/friendShips", middleware.AuthMiddleware())
 	{
 		//create
 		friendShipPublicRouter.POST("/", friendShipController.Create)
@@ -25,7 +26,7 @@ func (friendShipRouter *FriendShipRouter) InitFriendShipRouter(router *gin.Route
 		//Lấy danh sách những người mà accountId này đã gữi lời mời tới cho các account khác
 		friendShipPublicRouter.GET("/send/:id", friendShipController.GetListSendFriendShips)
 		friendShipPublicRouter.GET("/receive/:id", friendShipController.GetListReceiveFriendShips)
-		friendShipPublicRouter.DELETE("/",friendShipController.Delete)
+		friendShipPublicRouter.DELETE("/", friendShipController.Delete)
 	}
 
 	// //private router

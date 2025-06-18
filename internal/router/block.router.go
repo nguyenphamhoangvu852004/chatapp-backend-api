@@ -6,21 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AccountRouter struct {
+type BlockRouter struct {
 }
 
-func (accountRouter *AccountRouter) InitAccountRouter(router *gin.RouterGroup) {
+func (blockRouter *BlockRouter) InitBlockRouter(router *gin.RouterGroup) {
 	//public router
-	authController, _ := wire.InitModuleAccount()
-	authPublicRouter := router.Group("/accounts")
+	blockController, _ := wire.InitModuleBlock()
+	blockPublicRouter := router.Group("/blocks")
 	{
-		authPublicRouter.GET("", authController.GetList)
-		authPublicRouter.GET("/detail/:id", authController.GetDetail)
-		authPublicRouter.GET("/random", authController.GetRandomList)
+		blockPublicRouter.POST("/", blockController.Create)
+		blockPublicRouter.DELETE("/", blockController.Delete)
+		blockPublicRouter.GET("/me/:id", blockController.GetList)
 	}
-	{
 
-	}
 	// //private router
 	// userPrivateRouter := router.Group("/user")
 	// // userPrivateRouter.Use(middleware.Limiter())
