@@ -67,6 +67,10 @@ func (dtoService *dtoService) Login(data dto.LoginInputDTO) (dto.LoginOutputDTO,
 		return dto.LoginOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "Not found account")
 	}
 
+	if account.IsBanned {
+		return dto.LoginOutputDTO{}, exception.NewCustomError(http.StatusUnauthorized, "Account is banned")
+	}
+
 	if account.Password != data.Password {
 		return dto.LoginOutputDTO{}, exception.NewCustomError(http.StatusUnauthorized, "Invalid password")
 	}
