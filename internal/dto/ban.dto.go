@@ -2,7 +2,6 @@ package dto
 
 type (
 	CreateBanInputDTO struct {
-		AdminId   string `json:"adminId"`
 		AccountId string `json:"accountId"`
 	}
 	CreateBanOutputDTO struct {
@@ -13,7 +12,6 @@ type (
 
 type (
 	DeleteBanInputDTO struct {
-		AdminId   string `json:"adminId"`
 		AccountId string `json:"accountId"`
 	}
 	DeleteBanOutputDTO struct {

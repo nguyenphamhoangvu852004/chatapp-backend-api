@@ -40,3 +40,10 @@ cloudinary:
   cloud_name: "dmsnw2qpd"
   api_key: "214187186256291"
   api_secret: "13ew1sxffolXvVYkaGleJcAd4AY"
+
+admin:
+  email: "toilaadmin@gmail.com"
+  username: "toilaadmin"
+  phoneNumber: "0012345621"
+  password: "Toilaadmin@2004"
+

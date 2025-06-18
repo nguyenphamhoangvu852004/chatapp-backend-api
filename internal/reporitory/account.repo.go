@@ -75,7 +75,7 @@ func (a *accountRepository) Update(account entity.Account) (entity.Account, erro
 // GetUserByUsername implements IAccountRepository.
 func (a *accountRepository) GetUserByUsername(username string) (entity.Account, error) {
 	var account entity.Account
-	err := global.Mdb.Where("username = ?", username).First(&account).Error
+	err := global.Mdb.Preload("Roles").Preload("Profile").Where("username = ?", username).First(&account).Error
 	if err != nil {
 		return entity.Account{}, err
 	}

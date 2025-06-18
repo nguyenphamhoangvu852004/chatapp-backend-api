@@ -23,6 +23,7 @@ services:
       - app-network
 
   backend:
+    image: nguyenphamhoangvu852004/chatapp-backend:latest
     container_name: chatapp-backend-go
     build:
       context: .

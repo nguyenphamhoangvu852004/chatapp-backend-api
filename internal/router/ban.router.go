@@ -1,6 +1,7 @@
 package router
 
 import (
+	"chapapp-backend-api/internal/middleware"
 	"chapapp-backend-api/internal/wire"
 
 	"github.com/gin-gonic/gin"
@@ -12,12 +13,12 @@ type BanRouter struct {
 func (banRouter *BanRouter) InitBanRouter(router *gin.RouterGroup) {
 	//public router
 	banController, _ := wire.InitModuleBan()
-	banPublicRouter := router.Group("/bans")
+	banPublicRouter := router.Group("/bans", middleware.AuthMiddleware())
 
 	{
 		banPublicRouter.GET("", banController.GetList)
-		banPublicRouter.POST("/create", banController.Create)
-		banPublicRouter.POST("/delete", banController.Delete)
+		banPublicRouter.POST("/create", middleware.VerifyRole([]string{"ADMIN"}), banController.Create)
+		banPublicRouter.POST("/delete", middleware.VerifyRole([]string{"ADMIN"}), banController.Delete)
 	}
 
 	// //private router
