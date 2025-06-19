@@ -56,6 +56,13 @@ func (a *accountService) GetRandomList(data dto.GetRamdonAccountInputDTO) ([]dto
 			continue
 		}
 
+		for len(acc.Roles) > 0 {
+			if acc.Roles[0].Rolename == "ADMIN" {
+				break
+			}
+			acc.Roles = acc.Roles[1:]
+		}
+
 		listOutDTO = append(listOutDTO, dto.GetAccountDetailOutputDTO{
 			Id:          fmt.Sprintf("%d", acc.ID),
 			Username:    acc.Username,
@@ -113,7 +120,12 @@ func (a *accountService) GetList(data dto.GetListAccountInputDTO) ([]dto.GetAcco
 		if blockedMap[entity.ID] {
 			continue // loại bỏ người bị mình block hoặc đã block mình
 		}
-
+		for entity.Roles != nil && len(entity.Roles) > 0 {
+			if entity.Roles[0].Rolename == "ADMIN" {
+				break
+			}
+			entity.Roles = entity.Roles[1:]
+		}
 		outputDTO = append(outputDTO, dto.GetAccountDetailOutputDTO{
 			Id:          fmt.Sprintf("%d", entity.ID),
 			Username:    entity.Username,
