@@ -9,40 +9,27 @@ import (
 	"github.com/zishang520/socket.io/v2/socket"
 )
 
-// func RegisterHandlers() {
-// 	IO.On("connection", func(clients ...any) {
-// 		client := clients[0].(*socket.Socket)
-// 		fmt.Println("✅ New client connected:", client.Id())
-
-// 		client.On("chat message", func(args ...any) {
-// 			data := args[0].(map[string]any)
-// 			content := data["content"].(string)
-// 			conversationID := uint(data["conversationId"].(float64)) // HTML gửi number
-// 			messageType := data["type"].(string)
-
-// 			fmt.Printf("📩 Message received: %s (conversation %d)\n", content, conversationID)
-
-// 			// Test broadcast lại
-// 			room := fmt.Sprintf("conversation_%d", conversationID)
-// 			IO.To(socket.Room(room)).Emit("chat message", map[string]any{
-// 				"senderId":       123, // test cứng
-// 				"conversationId": conversationID,
-// 				"content":        content,
-// 				"type":           messageType,
-// 			})
-// 		})
-
-// 		client.On("disconnect", func(...any) {
-// 			fmt.Println("❌ Client disconnected:", client.Id())
-// 		})
-// 	})
-// }
-
 func RegisterHandlers() {
 	IO.On("connection", func(clients ...any) {
 		client := clients[0].(*socket.Socket)
 		fmt.Println("✅ New client connected:", client.Id())
-
+		client.On("identify", func(args ...any) {
+			if len(args) == 0 || args[0] == nil {
+				return
+			}
+			floatId, ok := args[0].(float64)
+			if !ok {
+				return
+			}
+			accountId := uint(floatId)
+			AddOnlineUser(accountId, string(client.Id())) // Không xoá map
+			IO.Emit("online users", GetOnlineUserIDs())   // Gửi tất cả ID đang online
+		})
+		// client.On("disconnect", func(args ...any) {
+		// 	fmt.Println("Client disconnected:", client.Id())
+		// 	RemoveOnlineUserBySocket(string(client.Id()))
+		// 	IO.Emit("online users", GetOnlineUserIDs())
+		// })
 		client.On("join room", func(args ...any) {
 			room := args[0].(string)
 			fmt.Println("➡️ Joining room:", room)
@@ -106,6 +93,12 @@ func RegisterHandlers() {
 		})
 		client.On("disconnect", func(...any) {
 			fmt.Println("❌ Client disconnected:", client.Id())
+			RemoveOnlineUserBySocket(string(client.Id()))
+			IO.Emit("online users", GetOnlineUserIDs())
+		})
+		client.On("get online users", func(...any) {
+			fmt.Println("📨 Client yêu cầu danh sách người online")
+			client.Emit("online users", GetOnlineUserIDs())
 		})
 	})
 }
