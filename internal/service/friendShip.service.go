@@ -45,9 +45,9 @@ func (s *friendShipService) Delete(data dto.DeleteFriendShipInputDTO) (dto.Delet
 
 	// 2. Tìm mối quan hệ theo cả hai chiều
 	friendShip, err := s.friendShipRepo.FindBySenderAndReceiver(sender.ID, receiver.ID)
-	if err != nil || friendShip.ID == 0 {
+	if err != nil {
 		friendShip, err = s.friendShipRepo.FindBySenderAndReceiver(receiver.ID, sender.ID)
-		if err != nil || friendShip.ID == 0 {
+		if err != nil{
 			return dto.DeleteFriendShipOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "friendship not found")
 		}
 	}

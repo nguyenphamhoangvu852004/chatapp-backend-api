@@ -2,6 +2,7 @@ package basic
 
 import "testing"
 
+
 func TestAddOne(t *testing.T) {
 	var (
 		input  = 1
