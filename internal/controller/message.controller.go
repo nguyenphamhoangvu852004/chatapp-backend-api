@@ -15,6 +15,27 @@ type MessageController struct {
 	messageService service.IMessageService
 }
 
+func (m *MessageController) Delete(c *gin.Context) {
+	var inputDTO dto.DeleteMessageInputDTO
+	if err := c.ShouldBindBodyWithJSON(&inputDTO); err != nil {  
+		response.ErrorReponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	
+	res, err := m.messageService.Delete(inputDTO)
+	if err != nil {
+		var customErr *exception.CustomError
+		if errors.As(err, &customErr) {
+			response.ErrorReponse(c, customErr.Code, customErr.Message)
+		} else {
+			response.ErrorReponse(c, 500, "internal server error")
+		}
+		return
+	}
+	response.SuccessReponse(c, http.StatusOK, res)
+
+}
+
 func (m *MessageController) Create(c *gin.Context) {
 	var inputDTO dto.CreateMessageInputDTO
 	if err := c.ShouldBindBodyWithJSON(&inputDTO); err != nil {

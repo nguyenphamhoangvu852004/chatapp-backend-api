@@ -18,6 +18,7 @@ func (messageRouter *MessageRouter) InitMessageRouter(router *gin.RouterGroup) {
 		//update
 		messagePublicRouter.POST("", messageController.Create)
 		messagePublicRouter.GET("/me/:id", messageController.GetMessages)
+		messagePublicRouter.DELETE("", messageController.Delete)
 	}
 	// //private router
 	// userPrivateRouter := router.Group("/user")

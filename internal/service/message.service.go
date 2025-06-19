@@ -3,8 +3,10 @@ package service
 import (
 	"chapapp-backend-api/internal/dto"
 	"chapapp-backend-api/internal/entity"
+	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/reporitory"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -12,10 +14,67 @@ import (
 type IMessageService interface {
 	GetList(data dto.GetListMessageInputDTO) (dto.GetListMessageOutputDTO, error)
 	Create(data dto.CreateMessageInputDTO) (dto.CreateMessageOutputDTO, error)
+	Delete(data dto.DeleteMessageInputDTO) (dto.DeleteMessageOutputDTO, error)
 }
 
 type messageService struct {
-	messageRepo reporitory.IMessageRepository
+	messageRepo      reporitory.IMessageRepository
+	accountRepo      reporitory.IAccountRepository
+	conversationRepo reporitory.IConversationRepository
+}
+
+// Delete implements IMessageService.
+func (s *messageService) Delete(data dto.DeleteMessageInputDTO) (dto.DeleteMessageOutputDTO, error) {
+	// tìm cái account
+	owner, err := s.accountRepo.GetUserByAccountId(data.OwnerId)
+	if err != nil {
+		return dto.DeleteMessageOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "account not found")
+	}
+
+	// tim cai conversation
+
+	conversationID, err := strconv.ParseUint(data.ConversationId, 10, 64)
+	if err != nil {
+		return dto.DeleteMessageOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "invalid conversation id")
+	}
+	conversation, err := s.conversationRepo.FindById(uint(conversationID))
+	if err != nil {
+		return dto.DeleteMessageOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "conversation not found")
+	}
+
+	// tim cai message
+
+	message, err := s.messageRepo.FindById(data.MessageId)
+	if err != nil {
+		return dto.DeleteMessageOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "message not found")
+	}
+
+	// kiem tra coi no co bi xoa hay chua
+
+	if message.DeletedAt.Valid {
+		return dto.DeleteMessageOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "message has been deleted")
+	}
+
+	// kiem tra coi co phai message do cua nguoi do hay khong
+
+	if message.SenderID != owner.ID {
+		return dto.DeleteMessageOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "you are not the owner of this message")
+	}
+
+	// xoa no di
+
+	res, err := s.messageRepo.Delete(message)
+	if err != nil {
+		return dto.DeleteMessageOutputDTO{}, err
+	}
+
+	return dto.DeleteMessageOutputDTO{
+		MessageId:      strconv.FormatUint(uint64(res.ID), 10),
+		OwnerId:        strconv.FormatUint(uint64(owner.ID), 10),
+		ConversationId: strconv.FormatUint(uint64(conversation.ID), 10),
+		IsDeleted:      true,
+	}, nil
+
 }
 
 // Create implements IMessageService.
@@ -70,6 +129,7 @@ func (s *messageService) GetList(data dto.GetListMessageInputDTO) (dto.GetListMe
 			Type:           m.MessageType,
 			OriginFilename: &m.OriginFilename,
 			Size:           &m.Size,
+			IsDeleted:      m.DeletedAt.Valid,
 			CreatedAt:      m.CreatedAt.Format(time.RFC3339),
 		})
 	}
@@ -80,6 +140,7 @@ func (s *messageService) GetList(data dto.GetListMessageInputDTO) (dto.GetListMe
 	}, nil
 }
 
-func NewMessageService(messageRepo reporitory.IMessageRepository) IMessageService {
-	return &messageService{messageRepo: messageRepo}
+func NewMessageService(messageRepo reporitory.IMessageRepository, accountRepo reporitory.IAccountRepository, conversationRepo reporitory.IConversationRepository) IMessageService {
+	return &messageService{messageRepo: messageRepo, accountRepo: accountRepo, conversationRepo: conversationRepo}
+
 }

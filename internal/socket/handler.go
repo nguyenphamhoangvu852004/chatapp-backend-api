@@ -51,7 +51,9 @@ func RegisterHandlers() {
 
 		client.On("chat message", func(args ...any) {
 			messageRepo := reporitory.NewMessageRepository()
-			messageService := service.NewMessageService(messageRepo)
+			accountRepo := reporitory.NewAccountRepository()
+			conversationRepo := reporitory.NewConversationRepository()
+			messageService := service.NewMessageService(messageRepo, accountRepo, conversationRepo)
 
 			data := args[0].(map[string]any)
 			content := data["content"].(string)

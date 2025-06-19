@@ -66,6 +66,8 @@ func InitModuleBlock() (*controller.BlockController, error) {
 func InitModuleMessage() (*controller.MessageController, error) {
 	wire.Build(
 		reporitory.NewMessageRepository,
+		reporitory.NewAccountRepository,
+		reporitory.NewConversationRepository,
 		service.NewMessageService,
 		controller.NewMessageController,
 	)

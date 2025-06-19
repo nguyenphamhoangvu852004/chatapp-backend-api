@@ -59,7 +59,9 @@ func InitModuleBlock() (*controller.BlockController, error) {
 
 func InitModuleMessage() (*controller.MessageController, error) {
 	iMessageRepository := reporitory.NewMessageRepository()
-	iMessageService := service.NewMessageService(iMessageRepository)
+	iAccountRepository := reporitory.NewAccountRepository()
+	iConversationRepository := reporitory.NewConversationRepository()
+	iMessageService := service.NewMessageService(iMessageRepository, iAccountRepository, iConversationRepository)
 	messageController := controller.NewMessageController(iMessageService)
 	return messageController, nil
 }

@@ -15,8 +15,8 @@ type IAccountRepository interface {
 	Create(account entity.Account) (entity.Account, error)
 	Update(account entity.Account) (entity.Account, error)
 	GetListBan(data dto.GetListBanInputDTO) ([]entity.Account, error)
-
 }
+
 
 type accountRepository struct {
 }

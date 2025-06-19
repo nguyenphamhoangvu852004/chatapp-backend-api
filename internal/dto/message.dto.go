@@ -33,5 +33,21 @@ type (
 		OriginFilename *string `json:"originFilename"`
 		Size           *string `json:"size"`
 		CreatedAt      string  `json:"createdAt"`
+		IsDeleted      bool    `json:"isDeleted"`
+	}
+)
+
+type (
+	DeleteMessageInputDTO struct {
+		OwnerId        string `json:"ownerId"`
+		ConversationId string `json:"conversationId"`
+		MessageId      string `json:"messageId"`
+	}
+
+	DeleteMessageOutputDTO struct {
+		OwnerId        string `json:"ownerId"`
+		ConversationId string `json:"conversationId"`
+		MessageId      string `json:"messageId"`
+		IsDeleted      bool   `json:"isDeleted"`
 	}
 )
