@@ -47,7 +47,11 @@ func (a *accountRepository) GetList(data dto.GetListAccountInputDTO) ([]entity.A
 	db := global.Mdb.Preload("Profile").Where("id <> ?", data.Me)
 
 	if data.Phone != "" {
-		db = db.Where("phone_number LIKE ?", "%"+data.Phone+"%")
+		db = db.Where("phone_number = ?", data.Phone)
+		if db.Error != nil {
+			return nil, db.Error
+		}
+
 	}
 
 	if err := db.Find(&accounts).Error; err != nil {
