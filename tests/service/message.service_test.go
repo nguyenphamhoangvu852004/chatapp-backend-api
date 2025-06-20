@@ -20,7 +20,6 @@ func setupTestService() (*MockMessageRepository, *MockAccountRepo, *MockConversa
 	return mockMsgRepo, mockAccRepo, mockConvRepo, svc
 }
 
-// 🧪 Mock IMessageRepository
 type MockMessageRepository struct {
 	mock.Mock
 }
@@ -52,8 +51,9 @@ type MockConversationRepo struct {
 }
 
 // Create implements reporitory.IConversationRepository.
-func (m *MockConversationRepo) Create(convention entity.Conversation) (entity.Conversation, error) {
-	panic("unimplemented")
+func (m *MockConversationRepo) Create(conversation entity.Conversation) (entity.Conversation, error) {
+	args := m.Called(conversation)
+	return args.Get(0).(entity.Conversation), args.Error(1)
 }
 
 // DeleteById implements reporitory.IConversationRepository.
@@ -62,8 +62,10 @@ func (m *MockConversationRepo) DeleteById(id uint) error {
 }
 
 // FindById implements reporitory.IConversationRepository.
+
 func (m *MockConversationRepo) FindById(data uint) (entity.Conversation, error) {
-	panic("unimplemented")
+	args := m.Called(data)
+	return args.Get(0).(entity.Conversation), args.Error(1)
 }
 
 // FindConversationBetweenTwo implements reporitory.IConversationRepository.
@@ -100,7 +102,6 @@ func TestCreateMessage_Success(t *testing.T) {
 		Size:           &size,
 	}
 
-	// Ghi nhớ: ID trong entity.Message là uint, còn DTO là string
 	expected := entity.Message{
 		BaseEntity: entity.BaseEntity{
 			ID:        10,
@@ -133,7 +134,7 @@ func TestCreateMessage_InvalidID(t *testing.T) {
 	_, _, _, svc := setupTestService()
 
 	input := dto.CreateMessageInputDTO{
-		SenderId:       "abc", // Không phải số
+		SenderId:       "abc",
 		ConversationId: "2",
 		Content:        "Hello",
 	}
