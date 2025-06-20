@@ -11,6 +11,7 @@ type (
 	GetListAccountInputDTO struct {
 		Me string `form:"me"`
 		GetBlock bool `form:"getBlock"`
+		Phone string `form:"phone"`
 	}
 )
 
