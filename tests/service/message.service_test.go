@@ -1,144 +1,143 @@
 package service
 
-// import (
-// 	"chapapp-backend-api/internal/dto"
-// 	"chapapp-backend-api/internal/entity"
-// 	"chapapp-backend-api/internal/service"
-// 	"errors"
-// 	"testing"
-// 	"time"
+import (
+	"chapapp-backend-api/internal/dto"
+	"chapapp-backend-api/internal/entity"
+	"chapapp-backend-api/internal/service"
+	"testing"
+	"time"
 
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
-// )
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
 
-// // 🧪 Mock IMessageRepository
-// type MockMessageRepository struct {
-// 	mock.Mock
-// }
+func setupTestService() (*MockMessageRepository, *MockAccountRepo, *MockConversationRepo, service.IMessageService) {
+	mockMsgRepo := new(MockMessageRepository)
+	mockAccRepo := new(MockAccountRepo)
+	mockConvRepo := new(MockConversationRepo)
 
-// func (m *MockMessageRepository) Create(msg entity.Message) (entity.Message, error) {
-// 	args := m.Called(msg)
-// 	return args.Get(0).(entity.Message), args.Error(1)
-// }
+	svc := service.NewMessageService(mockMsgRepo, mockAccRepo, mockConvRepo)
+	return mockMsgRepo, mockAccRepo, mockConvRepo, svc
+}
 
-// func (m *MockMessageRepository) GetMessagesByConversation(conversationID string) ([]entity.Message, error) {
-// 	args := m.Called(conversationID)
-// 	return args.Get(0).([]entity.Message), args.Error(1)
-// }
+// 🧪 Mock IMessageRepository
+type MockMessageRepository struct {
+	mock.Mock
+}
 
-// func TestCreateMessage_Success(t *testing.T) {
-// 	mockRepo := new(MockMessageRepository)
-// 	svc := service.NewMessageService(mockRepo)
+// Delete implements reporitory.IMessageRepository.
+func (m *MockMessageRepository) Delete(message entity.Message) (entity.Message, error) {
+	args := m.Called(message)
+	return args.Get(0).(entity.Message), args.Error(1)
+}
 
-// 	originFile := "test.txt"
-// 	size := "1234"
+// FindById implements reporitory.IMessageRepository.
+func (m *MockMessageRepository) FindById(messageId string) (entity.Message, error) {
+	args := m.Called(messageId)
+	return args.Get(0).(entity.Message), args.Error(1)
+}
 
-// 	input := dto.CreateMessageInputDTO{
-// 		SenderId:       "1",
-// 		ConversationId: "2",
-// 		Content:        "Hello",
-// 		OriginFilename: &originFile,
-// 		Size:           &size,
-// 	}
+func (m *MockMessageRepository) Create(msg entity.Message) (entity.Message, error) {
+	args := m.Called(msg)
+	return args.Get(0).(entity.Message), args.Error(1)
+}
 
-// 	expectedEntity := entity.Message{
-// 		BaseEntity: entity.BaseEntity{
-// 			ID:        10,
-// 			CreatedAt: time.Now(),
-// 			UpdatedAt: time.Now(),
-// 		},
-// 		SenderID:       1,
-// 		ConversationID: 2,
-// 		Content:        "Hello",
-// 		OriginFilename: "test.txt",
-// 		Size:           "1234",
-// 		MessageType:    "text",
-// 	}
+func (m *MockMessageRepository) GetMessagesByConversation(conversationID string) ([]entity.Message, error) {
+	args := m.Called(conversationID)
+	return args.Get(0).([]entity.Message), args.Error(1)
+}
 
-// 	mockRepo.On("Create", mock.MatchedBy(func(msg entity.Message) bool {
-// 		return msg.SenderID == 1 && msg.ConversationID == 2
-// 	})).Return(entity.Message{
-// 		BaseEntity: entity.BaseEntity{
-// 			ID:        10,
-// 			CreatedAt: time.Now(),
-// 			UpdatedAt: time.Now(),
-// 		},
-// 		Content:        "Hello",
-// 		OriginFilename: "test.txt",
-// 		Size:           "1234",
-// 	}, nil)
-// 	output, err := svc.Create(input)
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, "10", output.MessageId)
-// 	assert.Equal(t, "Hello", output.Content)
-// 	assert.Equal(t, "test.txt", *output.OriginFilename)
-// assert.Equal(t, expectedEntity.Content, output.Content)
-// // hoặc
-// assert.Equal(t, expectedEntity.OriginFilename, *output.OriginFilename)
+type MockConversationRepo struct {
+	mock.Mock
+}
 
-// 	mockRepo.AssertExpectations(t)
-// }
+// Create implements reporitory.IConversationRepository.
+func (m *MockConversationRepo) Create(convention entity.Conversation) (entity.Conversation, error) {
+	panic("unimplemented")
+}
 
-// func TestCreateMessage_InvalidID(t *testing.T) {
-// 	mockRepo := new(MockMessageRepository)
-// 	svc := service.NewMessageService(mockRepo)
+// DeleteById implements reporitory.IConversationRepository.
+func (m *MockConversationRepo) DeleteById(id uint) error {
+	panic("unimplemented")
+}
 
-// 	input := dto.CreateMessageInputDTO{
-// 		SenderId:       "abc", // invalid ID
-// 		ConversationId: "2",
-// 		Content:        "Hello",
-// 		OriginFilename: nil,
-// 		Size:           nil,
-// 	}
+// FindById implements reporitory.IConversationRepository.
+func (m *MockConversationRepo) FindById(data uint) (entity.Conversation, error) {
+	panic("unimplemented")
+}
 
-// 	_, err := svc.Create(input)
-// 	assert.Error(t, err)
-// }
+// FindConversationBetweenTwo implements reporitory.IConversationRepository.
+func (m *MockConversationRepo) FindConversationBetweenTwo(user1ID uint, user2ID uint) (*entity.Conversation, error) {
+	panic("unimplemented")
+}
 
-// func TestGetList_Success(t *testing.T) {
-// 	mockRepo := new(MockMessageRepository)
-// 	svc := service.NewMessageService(mockRepo)
+// GetListOwnedByMe implements reporitory.IConversationRepository.
+func (m *MockConversationRepo) GetListOwnedByMe(data string) ([]dto.GetConversationOutputDTO, error) {
+	panic("unimplemented")
+}
 
-// 	conversationID := "2"
-// 	fakeTime := time.Now()
+// GetMembersByConversationID implements reporitory.IConversationRepository.
+func (m *MockConversationRepo) GetMembersByConversationID(conversationID uint) ([]entity.Participant, error) {
+	panic("unimplemented")
+}
 
-// 	mockRepo.On("GetMessagesByConversation", conversationID).Return([]entity.Message{
-// 		{
-// 			SenderID:       1,
-// 			Content:        "Hello",
-// 			MessageType:    "text",
-// 			OriginFilename: "file.jpg",
-// 			Size:           "999",
-// 			BaseEntity: entity.BaseEntity{
-// 				CreatedAt: fakeTime,
-// 				UpdatedAt: fakeTime,
-// 			},
-// 		},
-// 	}, nil)
+// Update implements reporitory.IConversationRepository.
+func (m *MockConversationRepo) Update(convention entity.Conversation) (entity.Conversation, error) {
+	panic("unimplemented")
+}
 
-// 	input := dto.GetListMessageInputDTO{
-// 		ConversationId: conversationID,
-// 	}
-// 	output, err := svc.GetList(input)
+func TestCreateMessage_Success(t *testing.T) {
+	msgRepo, _, _, svc := setupTestService()
 
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, conversationID, output.ConversationId)
-// 	assert.Len(t, output.Messages, 1)
-// 	assert.Equal(t, "Hello", output.Messages[0].Content)
-// 	assert.Equal(t, "file.jpg", *output.Messages[0].OriginFilename)
-// 	assert.Equal(t, "1", output.Messages[0].SenderId)
+	originFile := "test.txt"
+	size := "1234"
 
-// 	mockRepo.AssertExpectations(t)
-// }
+	input := dto.CreateMessageInputDTO{
+		SenderId:       "1",
+		ConversationId: "2",
+		Content:        "Hello",
+		OriginFilename: &originFile,
+		Size:           &size,
+	}
 
-// func TestGetList_Error(t *testing.T) {
-// 	mockRepo := new(MockMessageRepository)
-// 	svc := service.NewMessageService(mockRepo)
+	// Ghi nhớ: ID trong entity.Message là uint, còn DTO là string
+	expected := entity.Message{
+		BaseEntity: entity.BaseEntity{
+			ID:        10,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+		SenderID:       1,
+		ConversationID: 2,
+		Content:        "Hello",
+		OriginFilename: "test.txt",
+		Size:           "1234",
+		MessageType:    "text",
+	}
 
-// mockRepo.On("GetMessagesByConversation", "2").Return([]entity.Message(nil), errors.New("db error"))
+	msgRepo.On("Create", mock.MatchedBy(func(msg entity.Message) bool {
+		return msg.SenderID == 1 && msg.ConversationID == 2
+	})).Return(expected, nil)
 
+	output, err := svc.Create(input)
 
-// 	_, err := svc.GetList(dto.GetListMessageInputDTO{ConversationId: "2"})
-// 	assert.Error(t, err)
-// }
+	assert.NoError(t, err)
+	assert.Equal(t, "10", output.MessageId)
+	assert.Equal(t, "Hello", output.Content)
+	assert.Equal(t, "test.txt", *output.OriginFilename)
+
+	msgRepo.AssertExpectations(t)
+}
+
+func TestCreateMessage_InvalidID(t *testing.T) {
+	_, _, _, svc := setupTestService()
+
+	input := dto.CreateMessageInputDTO{
+		SenderId:       "abc", // Không phải số
+		ConversationId: "2",
+		Content:        "Hello",
+	}
+
+	_, err := svc.Create(input)
+	assert.Error(t, err)
+}

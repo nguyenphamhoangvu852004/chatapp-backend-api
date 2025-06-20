@@ -1,7 +1,7 @@
 server:
   mode: "production"
-  port: 8080        # Match với docker-compose exposed port
-  socketPort: 8082  # Nếu có chạy WebSocket riêng
+  port: 8080
+  socketPort: 8081
 
 cors:
   url: "http://localhost:5173"  # Nếu frontend chạy local, giữ nguyên

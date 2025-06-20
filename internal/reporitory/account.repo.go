@@ -17,7 +17,6 @@ type IAccountRepository interface {
 	GetListBan(data dto.GetListBanInputDTO) ([]entity.Account, error)
 }
 
-
 type accountRepository struct {
 }
 
@@ -44,11 +43,17 @@ func (a *accountRepository) GetRandomFive(id string) ([]entity.Account, error) {
 // GetList implements IAccountRepository.
 func (a *accountRepository) GetList(data dto.GetListAccountInputDTO) ([]entity.Account, error) {
 	var accounts []entity.Account
-	err := global.Mdb.Preload("Profile").Where("id <> ?", data.Me).Find(&accounts).Error
 
-	if err != nil {
+	db := global.Mdb.Preload("Profile").Where("id <> ?", data.Me)
+
+	if data.Phone != "" {
+		db = db.Where("phone_number LIKE ?", "%"+data.Phone+"%")
+	}
+
+	if err := db.Find(&accounts).Error; err != nil {
 		return nil, err
 	}
+
 	return accounts, nil
 }
 

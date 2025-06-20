@@ -1,7 +1,8 @@
 server:
   mode: "dev"
-  port: 8081
-  socketPort: 8082
+  port: 8080
+  socketPort: 8081
+
 cors:
   url: "http://localhost:5173"
 
