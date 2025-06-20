@@ -16,7 +16,7 @@ func (userRouter *ProfileRouter) InitProfileRouter(router *gin.RouterGroup) {
 	profilePublicRouter := router.Group("/profiles", middleware.AuthMiddleware())
 	{
 		//update
-		profilePublicRouter.PUT("/:id", middleware.UploadProfileAccountToCloudinary(), profileController.Update)
+		profilePublicRouter.PATCH("/:id", middleware.UploadProfileAccountToCloudinary(), profileController.Update)
 	}
 	// //private router
 	// userPrivateRouter := router.Group("/user")

@@ -27,10 +27,10 @@ type CreateProfileOutputDTO struct {
 
 type UpdateProfileInputDTO struct {
 	ProfileId string `json:"profileId" binding:"required"`
-	FullName  string `json:"fullname" binding:"required"`
-	Bio       string `json:"bio" binding:"required"`
-	AvatarURL string `json:"avatarUrl" binding:"required"`
-	CoverURL  string `json:"coverUrl" binding:"required"`
+	FullName  string `json:"fullname" `
+	Bio       string `json:"bio"`
+	AvatarURL string `json:"avatarUrl" `
+	CoverURL  string `json:"coverUrl" `
 }
 
 type UpdateProfileOutputDTO struct {
