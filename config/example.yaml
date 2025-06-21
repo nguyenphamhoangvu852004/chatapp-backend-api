@@ -1,17 +1,17 @@
 server:
-  mode: "dev"
+  mode: "example"
   port: 8080
   socketPort: 8081
 
 cors:
-  url: "http://localhost:5173"
+  url: "http://localhost:nnnn"
 
 mysql:
   host: "localhost"
   port: 3306
-  username: "root"
-  password: "nguyenvu"
-  dbname: "chatapp"
+  username: "xxxxx"
+  password: "xxxxx"
+  dbname: "xxxxx"
   maxIdleConns: 3
   maxOpenConns: 5
   connMaxLifeTime: 10
@@ -31,19 +31,19 @@ log:
   compress:   true
 
 jwt:
-  accessSecret: "myaccessecrettoken2025"
+  accessSecret: "xxx"
   accessSecretExpiriedTime: 3600
-  refreshSecret: "myrefreshtokensecret2025"
+  refreshSecret: "xxx"
   refreshSecretExpiriedTime: 86400
 
 cloudinary:
-  cloud_name: "dmsnw2qpd"
-  api_key: "214187186256291"
-  api_secret: "13ew1sxffolXvVYkaGleJcAd4AY"
+  cloud_name: "xxx"
+  api_key: "xxx"
+  api_secret: "xxx"
 
 admin:
-  email: "toilaadmin@gmail.com"
-  username: "toilaadmin"
-  phoneNumber: "0012345621"
-  password: "Toilaadmin@2004"
+  email: "xxx"
+  username: "xxx"
+  phoneNumber: "xxx"
+  password: "xxx"
 
