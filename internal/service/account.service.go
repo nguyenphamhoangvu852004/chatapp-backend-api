@@ -2,8 +2,10 @@ package service
 
 import (
 	"chapapp-backend-api/internal/dto"
+	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/reporitory"
 	"fmt"
+	"net/http"
 	"time"
 )
 
@@ -21,7 +23,12 @@ type accountService struct {
 
 // ChangePassword implements IAccountService.
 func (a *accountService) ChangePassword(data dto.ChangePasswordInputDTO) (dto.ChangePasswordOutputDTO, error) {
- panic("unimplemented")
+	// kiểm tra 2 mật khau đưa vào có khớp không
+	if data.NewPassword != data.ConfirmPassword {
+		return dto.ChangePasswordOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "new password and confirm password not match")
+	}
+	// tim cai account do bang id
+	return dto.ChangePasswordOutputDTO{}, nil
 }
 
 // GetRandomList implements IAccountService.
