@@ -1,6 +1,7 @@
 package router
 
 import (
+	"chapapp-backend-api/internal/middleware"
 	"chapapp-backend-api/internal/wire"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func (accountRouter *AccountRouter) InitAccountRouter(router *gin.RouterGroup) {
 		authPublicRouter.GET("/random", authController.GetRandomList)
 	}
 	{
-
+		authPublicRouter.PATCH("", middleware.AuthMiddleware(), authController.ChangePassword)
 	}
 	// //private router
 	// userPrivateRouter := router.Group("/user")
