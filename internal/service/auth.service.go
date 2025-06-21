@@ -159,6 +159,12 @@ func (s *dtoService) Register(input dto.RegisterInputDTO) (dto.RegisterOutputDTO
 		// Email đã tồn tại, trả về lỗi
 		return dto.RegisterOutputDTO{}, exception.NewCustomError(http.StatusConflict, "Email already exists")
 	}
+	_, err = s.accountRepo.GetUserByUsername(input.Username)
+
+	if err == nil {
+		return dto.RegisterOutputDTO{}, exception.NewCustomError(http.StatusConflict, "Username already exists")
+	}
+
 	// 2. Kiểm tra password và confirm password
 	if input.Password != input.ConfirmPassword {
 		return dto.RegisterOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "Password and confirm password do not match")
