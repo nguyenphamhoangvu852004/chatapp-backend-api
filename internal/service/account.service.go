@@ -4,6 +4,7 @@ import (
 	"chapapp-backend-api/internal/dto"
 	exception "chapapp-backend-api/internal/exeption"
 	"chapapp-backend-api/internal/reporitory"
+	"chapapp-backend-api/internal/utils"
 	"fmt"
 	"net/http"
 	"time"
@@ -28,7 +29,23 @@ func (a *accountService) ChangePassword(data dto.ChangePasswordInputDTO) (dto.Ch
 		return dto.ChangePasswordOutputDTO{}, exception.NewCustomError(http.StatusBadRequest, "new password and confirm password not match")
 	}
 	// tim cai account do bang id
-	return dto.ChangePasswordOutputDTO{}, nil
+	accountENtity, err := a.accountRepo.GetUserByAccountId(data.Id)
+	if err != nil {
+		return dto.ChangePasswordOutputDTO{}, exception.NewCustomError(http.StatusNotFound, "not found account")
+	}
+
+	// xử lý mật khau
+	accountENtity.Password, err = utils.HashPassword(data.NewPassword)
+	if err != nil {
+		return dto.ChangePasswordOutputDTO{}, err
+	}
+
+	// luu vao db
+	_, err = a.accountRepo.Update(accountENtity)
+	if err != nil {
+		return dto.ChangePasswordOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "failed to update account")
+	}
+	return dto.ChangePasswordOutputDTO{Id: data.Id, IsSuccess: true}, nil
 }
 
 // GetRandomList implements IAccountService.
