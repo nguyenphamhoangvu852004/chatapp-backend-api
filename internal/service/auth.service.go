@@ -41,7 +41,10 @@ func (dtoService *dtoService) ResetPassword(data dto.ResetPasswordInputDTO) (dto
 	}
 
 	// doi qua mat khau moi
-	account.Password = utils.GetHash(data.Password)
+	account.Password, err = utils.HashPassword(data.Password)
+	if err != nil {
+		return dto.ResetPasswordOutputDTO{}, exception.NewCustomError(http.StatusInternalServerError, "Failed to hash password")
+	}
 	account.UpdatedAt = time.Now()
 
 	// luu vao db
