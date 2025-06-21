@@ -41,7 +41,7 @@ func (dtoService *dtoService) ResetPassword(data dto.ResetPasswordInputDTO) (dto
 	}
 
 	// doi qua mat khau moi
-	account.Password = data.Password
+	account.Password = utils.GetHash(data.Password)
 	account.UpdatedAt = time.Now()
 
 	// luu vao db
@@ -79,7 +79,7 @@ func (dtoService *dtoService) Login(data dto.LoginInputDTO) (dto.LoginOutputDTO,
 
 	var roles []string
 	for _, r := range account.Roles {
-		roles = append(roles, r.Rolename) 
+		roles = append(roles, r.Rolename)
 	}
 
 	var accToken, _ = utils.GenerateAccessToken(account.ID, account.Email, roles)

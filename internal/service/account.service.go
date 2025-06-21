@@ -11,11 +11,17 @@ type IAccountService interface {
 	GetDetail(id string) (dto.GetAccountDetailOutputDTO, error)
 	GetList(data dto.GetListAccountInputDTO) ([]dto.GetAccountDetailOutputDTO, error)
 	GetRandomList(data dto.GetRamdonAccountInputDTO) ([]dto.GetAccountDetailOutputDTO, error)
+	ChangePassword(data dto.ChangePasswordInputDTO) (dto.ChangePasswordOutputDTO, error)
 }
 
 type accountService struct {
 	accountRepo reporitory.IAccountRepository
 	blockRepo   reporitory.IBlockRepository
+}
+
+// ChangePassword implements IAccountService.
+func (a *accountService) ChangePassword(data dto.ChangePasswordInputDTO) (dto.ChangePasswordOutputDTO, error) {
+ panic("unimplemented")
 }
 
 // GetRandomList implements IAccountService.
